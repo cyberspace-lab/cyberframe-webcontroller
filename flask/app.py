@@ -7,12 +7,12 @@ from sqlalchemy.orm import sessionmaker
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:8080"}})
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:aloha123@localhost/postgres'
+CORS(app, resources={r"/*": {"origins": "http://vue:8080"}})
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@db:5432/test'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'aloha1234'
+app.config['SECRET_KEY'] = 'aloha123'
 db = SQLAlchemy(app)
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:8080")
+socketio = SocketIO(app, cors_allowed_origins="http://vue:8080")
 
 class Test(db.Model):
     __tablename__ = 'test'
@@ -21,13 +21,13 @@ class Test(db.Model):
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, resources={r"/*": {"origins": "http://localhost:8080"}})
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:aloha123@localhost/postgres'
+    CORS(app, resources={r"/*": {"origins": "http://vue:8080"}})
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@db:5432/test'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = 'aloha1234'
+    app.config['SECRET_KEY'] = 'aloha123'
     app.app_context().push()
     db.init_app(app)
-    socketio = SocketIO(app, cors_allowed_origins="http://localhost:8080")
+    socketio = SocketIO(app, cors_allowed_origins="http://vue:8080")
     return app
 
 def check_database_changes():
