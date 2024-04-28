@@ -1,49 +1,38 @@
-version: "3.8"
+version: "3.9"
+
 services:
-  db:
-    container_name: postgres_container
-    image: postgres
-    restart: always
+  flask_app:
+    container_name: flask_app
+    image: dockerhub-flask_live_app:1.0.0
+    build: .
+    ports:
+      - "4000:4000"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: test
+      - DB_URL=postgresql://postgres:postgres@flask_db:5432/postgres
+    depends_on:
+      - flask_db
+  flask_db:
+    container_name: flask_db
+    image: postgres:12
     ports:
       - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  #pgadmin:
-  #  container_name: pgadmin4_container
-  #  image: dpage/pgadmin4
-  #  restart: always
-  #  environment:
-  #    PGADMIN_DEFAULT_EMAIL: admin@admin.com
-  #    PGADMIN_DEFAULT_PASSWORD: aloha123
-  #  ports:
-  #    - "5050:80"
-
-  flask:
-    container_name: flask_container
-    build: ./flask
+      - pgdata:/var/lib/postgresql/data
+  vue_frontend:
+    container_name: vue_frontend
+    image: node:latest
+    working_dir: /app
     volumes:
-      - ./flask:/usr/src/flask
+      - ./vue-frontend:/app
     ports:
-      - 5001:5000
+      - "5173:5173"
     depends_on:
-      - db
-    command: python3 /usr/src/flask/app.py
-
-  vue:
-    container_name: vue_container
-    build: ./testApp
-    volumes:
-      - ./testApp:/home/node/app
-    depends_on:
-      - flask
-    ports:
-      - 8080:8080
+      - flask_app
+    command: ["/bin/sh", "-c", "npm install && npm run dev"]
 
 volumes:
-  postgres_data:
+  pgdata: {}
