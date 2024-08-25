@@ -1,0 +1,54 @@
+{
+    "applications": {
+      "Diplomovka": {
+        "controlButtons": [
+          {
+            "title": "Restart",
+            "payload": {
+              "eventName": "restart",
+              "parameters": {
+                "duration": 5,
+                "message": "Hello, World!"
+            }
+            }
+          },
+          {
+            "title": "Pause",
+            "payload": {
+              "eventName": "pause",
+              "parameters": {}
+            }
+          }
+        ],
+        "receivers": [
+          {
+            "keyTest":{
+              "maxHistory": 10
+            },
+            "event":{
+              "maxHistory": 5
+            }
+          }
+        ]
+      },
+      "experiment2": {
+        "name": "Experiment 2",
+        "controlButtons": [
+          {
+            "title": "Start",
+            "payload": {
+              "eventName": "start",
+              "parameters": {}
+            }
+          },
+          {
+            "title": "Stop",
+            "payload": {
+              "eventName": "stop",
+              "parameters": {}
+            }
+          }
+        ]
+      }
+    }
+  }

@@ -4,6 +4,8 @@ from sqlalchemy import desc
 from sqlalchemy import func
 from flask_cors import CORS
 from os import environ
+from time import time
+import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('DB_URL')
@@ -11,74 +13,91 @@ db = SQLAlchemy(app)
 
 cors = CORS(app, origins="*")
 
-class Position(db.Model):
-    __tablename__ = 'positions'
+sessions = {}
+max_history_cache = {}
+config = None
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    x = db.Column(db.Float, nullable=False)
-    y = db.Column(db.Float, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=func.now())
+with open('vue-frontend/src/config.json') as config_file:
+    config = json.load(config_file)
 
-    def json(self):
-        return {'id': self.id, 'x': self.x, 'y': self.y, 'timestamp': self.timestamp}
-
-db.create_all()
-
-# get latest position by timestamp
-@app.route('/positions/latest', methods=['GET'])
-def get_latest_position():
-    try:
-        latest_position = Position.query.order_by(desc(Position.timestamp)).first()
-        if latest_position:
-            return make_response(jsonify({'position': latest_position.json()}), 200)
-        else:
-          default_position = {'x': 0, 'y': 0}
-          return make_response(jsonify({'position': default_position, 'message': 'No positions found'}), 200)
-    except Exception as e:
-        return make_response(jsonify({'message': f'Error getting position: {str(e)}'}), 500)
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.form
+    device_id = data.get('device_id')
     
-# create a position
-@app.route('/positions', methods=['POST'])
-def create_position():
+    if not device_id:
+        return jsonify({'error': 'device_id is required'}), 400
+    
+    if device_id in sessions:
+        sessions[device_id]['last_ping'] = time()
+        return jsonify({'message': 'ping received'}), 200
+        
+    session_name = data.get('session_name')
+    endpoint = data.get('endpoint')
+    
+    sessions[device_id] = {
+        'session_name': session_name,
+        'start_time': time(),
+        'last_ping': time(),
+        'endpoint': endpoint,
+        'data': {}
+    }
+    
+    return jsonify({'message': 'ping received'}), 200
+
+@app.route('/sessions', methods=['GET'])
+def get_sessions():
+    current_time = time()
+    active_sessions = {k: v for k, v in sessions.items() if current_time - v['last_ping'] < 10}
+    
+    return jsonify(active_sessions), 200
+
+@app.route('/past-sessions', methods=['GET'])
+def get_past_sessions():
+    current_time = time()
+    past_sessions = {k: v for k, v in sessions.items() if current_time - v['last_ping'] >= 10}
+    
+    return jsonify(past_sessions), 200
+
+@app.route('/update_data', methods=['POST'])
+def update_data():
     try:
         data = request.get_json()
-        new_position = Position(x=data['x'], y=data['y'])
-        db.session.add(new_position)
-        db.session.commit()
-        return make_response(jsonify({'message': 'Position created'}), 201)
-    except Exception as e:
-        return make_response(jsonify({'message': 'Error creating position: ' + str(e)}), 500)
-    
-# get all positions
-@app.route('/positions', methods=['GET'])
-def get_positions():
-  try:
-    positions = Position.query.order_by(desc(Position.timestamp)).all()
-    return make_response(jsonify([position.json() for position in positions]), 200)
-  except e:
-    return make_response(jsonify({'message': 'error getting positions'}), 500)
+        
+        if data is None:
+            raise ValueError("No JSON data provided")
 
-# get top x positions
-@app.route('/positions/<int:topX>', methods=['GET'])
-def get_top_x_positions(topX):
-  try:
-    positions = Position.query.order_by(desc(Position.timestamp)).limit(topX).all()
-    return make_response(jsonify([position.json() for position in positions]), 200)
-  except e:
-    return make_response(jsonify({'message': f'error getting top {str(topX)} positions'}), 500)
-  
-# delete all positions
-@app.route('/positions/delete', methods=['DELETE'])
-def delete_all_positions():
-    try:
-        db.session.query(Position).delete()
-        db.session.commit()
-        return make_response(jsonify({'message': 'All positions deleted'}), 200)
-    except Exception as e:
-        db.session.rollback()
-        return make_response(jsonify({'message': 'Error deleting positions: ' + str(e)}), 500)
+        device_id = data.get('device_id')
+        key = data.get('key')
+        value = data.get('value')
 
-# create a test route
-@app.route('/test', methods=['GET'])
-def test():
-  return make_response(jsonify({'message': 'test route'}), 200)
+        if not device_id or not key or not value:
+            return jsonify({'error': 'device_id, key, and value are required'}), 400
+
+        if key not in sessions[device_id]['data']:
+            sessions[device_id]['data'][key] = []
+
+        sessions[device_id]['data'][key].insert(0, value)
+
+        session_name = sessions[device_id]['session_name']
+
+        max_history_size = max_history_cache.get((session_name, key))
+        if max_history_size is None:
+            app_config = config.get('applications', {}).get(session_name, {})
+            receivers = app_config.get('receivers', [{}])
+            max_history_size = receivers[0].get(key, {}).get('maxHistory', 10)
+            max_history_cache[(session_name, key)] = max_history_size
+
+        if len(sessions[device_id]['data'][key]) > max_history_size:
+            sessions[device_id]['data'][key] = sessions[device_id]['data'][key][:max_history_size]
+
+        return jsonify({'message': 'Data updated successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/session_data/<device_id>', methods=['GET'])
+def get_session_data(device_id):
+    if device_id in sessions:
+        return jsonify(sessions[device_id]['data']), 200
+    return jsonify({}), 404
