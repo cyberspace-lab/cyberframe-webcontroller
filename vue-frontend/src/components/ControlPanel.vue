@@ -79,6 +79,7 @@
           .catch(error => {
             console.error("There was an error fetching the session!", error);
           });
+        this.fetchSessionData();
       },
       fetchSessionData() {
       axios.get(`http://localhost:4000/session_data/${this.deviceId}`)

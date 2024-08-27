@@ -3,36 +3,35 @@
       "Diplomovka": {
         "controlButtons": [
           {
-            "title": "Restart",
+            "title": "Send some data",
             "payload": {
-              "eventName": "restart",
+              "eventName": "sendSomeData",
               "parameters": {
                 "duration": 5,
-                "message": "Hello, World!"
-            }
+                "message": "number five"
+              }
             }
           },
           {
-            "title": "Pause",
+            "title": "Change color",
             "payload": {
-              "eventName": "pause",
+              "eventName": "changeColor",
               "parameters": {}
             }
           }
         ],
         "receivers": [
           {
-            "keyTest":{
-              "maxHistory": 10
-            },
-            "event":{
+            "currentColor":{
               "maxHistory": 5
+            },
+            "randomNumber":{
+              "maxHistory": 10
             }
           }
         ]
       },
       "experiment2": {
-        "name": "Experiment 2",
         "controlButtons": [
           {
             "title": "Start",

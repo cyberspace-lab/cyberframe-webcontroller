@@ -42,6 +42,13 @@ def register():
         'endpoint': endpoint,
         'data': {}
     }
+
+    app_config = config.get('applications', {}).get(session_name, {})
+    receivers = app_config.get('receivers', [{}])
+
+    for receiver in receivers:
+        for key in receiver.keys():
+            sessions[device_id]['data'][key] = []
     
     return jsonify({'message': 'ping received'}), 200
 
