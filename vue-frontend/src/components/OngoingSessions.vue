@@ -39,7 +39,7 @@
     },
     methods: {
       fetchSessions() {
-        axios.get('http://localhost:4000/sessions')
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/sessions`)
           .then(response => {
             this.sessions = response.data;
           })

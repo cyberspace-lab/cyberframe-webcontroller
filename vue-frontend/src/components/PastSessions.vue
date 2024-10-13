@@ -36,7 +36,7 @@
     },
     methods: {
       fetchPastSessions() {
-        axios.get('http://localhost:4000/past-sessions')
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/past-sessions`)
           .then(response => {
             this.pastSessions = response.data;
           })

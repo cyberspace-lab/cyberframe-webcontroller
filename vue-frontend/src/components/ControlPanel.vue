@@ -71,7 +71,7 @@
   },
     methods: {
       fetchSession() {
-        axios.get(`http://localhost:4000/sessions`)
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/sessions`)
           .then(response => {
             const sessions = response.data;
             this.session = sessions[this.deviceId] || null;
@@ -82,7 +82,7 @@
         this.fetchSessionData();
       },
       fetchSessionData() {
-      axios.get(`http://localhost:4000/session_data/${this.deviceId}`)
+      axios.get(`${import.meta.env.VITE_API_BASE_URL}/session_data/${this.deviceId}`)
         .then(response => {
           if (response.data) {
             this.sessionData = response.data;
