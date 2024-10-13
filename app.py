@@ -30,17 +30,19 @@ def register():
     
     if device_id in sessions:
         sessions[device_id]['last_ping'] = time()
-        return jsonify({'message': 'ping received'}), 200
+        return jsonify({'message': 'ping received', 'public_ip': sessions[device_id]['public_ip']}), 200
         
     session_name = data.get('session_name')
     endpoint = data.get('endpoint')
+    public_ip = request.remote_addr
     
     sessions[device_id] = {
         'session_name': session_name,
         'start_time': time(),
         'last_ping': time(),
         'endpoint': endpoint,
-        'data': {}
+        'data': {},
+        'public_ip': public_ip
     }
 
     app_config = config.get('applications', {}).get(session_name, {})
@@ -50,7 +52,7 @@ def register():
         for key in receiver.keys():
             sessions[device_id]['data'][key] = []
     
-    return jsonify({'message': 'ping received'}), 200
+    return jsonify({'message': 'registered successfully', 'public_ip': public_ip}), 200
 
 @app.route('/sessions', methods=['GET'])
 def get_sessions():
