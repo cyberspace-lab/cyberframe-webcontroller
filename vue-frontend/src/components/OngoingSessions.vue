@@ -29,6 +29,7 @@
   
   <script>
   import axios from 'axios';
+  import config from '@/config.json';
   
   export default {
     name: 'ongoingsessions',
@@ -39,7 +40,7 @@
     },
     methods: {
       fetchSessions() {
-        axios.get(`${import.meta.env.VITE_API_BASE_URL}/sessions`)
+        axios.get(`${config.urlServer}/sessions`)
           .then(response => {
             this.sessions = response.data;
           })

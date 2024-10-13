@@ -34,6 +34,7 @@
   <script>
   import axios from 'axios';
   import { reactive } from 'vue';
+  import config from '@/config.json';
   
   export default {
     name: 'pastsessiondetail',
@@ -47,7 +48,7 @@
     },
     methods: {
       fetchSession() {
-        axios.get(`${import.meta.env.VITE_API_BASE_URL}/past-sessions`)
+        axios.get(`${config.urlServer}/past-sessions`)
           .then(response => {
             const sessions = response.data;
             this.session = sessions[this.deviceId] || null;
@@ -57,7 +58,7 @@
           });
       },
       fetchSessionData() {
-      axios.get(`${import.meta.env.VITE_API_BASE_URL}/session_data/${this.deviceId}`)
+      axios.get(`${config.urlServer}/session_data/${this.deviceId}`)
         .then(response => {
           if (response.data) {
             this.sessionData = response.data;

@@ -26,6 +26,7 @@
   
   <script>
   import axios from 'axios';
+  import config from '@/config.json';
   
   export default {
     name: 'past-sessions',
@@ -36,7 +37,7 @@
     },
     methods: {
       fetchPastSessions() {
-        axios.get(`${import.meta.env.VITE_API_BASE_URL}/past-sessions`)
+        axios.get(`${config.urlServer}/past-sessions`)
           .then(response => {
             this.pastSessions = response.data;
           })
