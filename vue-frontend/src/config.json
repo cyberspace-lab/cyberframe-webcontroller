@@ -50,5 +50,6 @@
         ]
       }
     },
-    "urlServer": "http://13.60.19.254:4000"
+    "urlServer": "http://localhost:4000",
+    "a":"http://13.60.19.254:4000"
   }

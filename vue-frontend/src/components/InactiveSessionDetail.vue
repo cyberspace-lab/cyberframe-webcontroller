@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h1>Past Session Detail</h1>
+      <h1>Inactive Session Detail</h1>
 
       <template v-if="session">
 
@@ -9,7 +9,7 @@
         <p>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
         <p>Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
 
-        <div class="pastSessionData">
+        <div class="inactiveSessionData">
           <h1>Session Data</h1>
           <div v-for="(values, key) in sessionData" :key="key" class="sessionDataItem">
             <div class="key-value-header" @click="toggleShowAllValues(key)">
@@ -30,73 +30,87 @@
 
     </div>
 </template>
-  
-  <script>
-  import axios from 'axios';
+
+<script>
+  import { io } from 'socket.io-client';
   import { reactive } from 'vue';
   import config from '@/config.json';
   
   export default {
-    name: 'pastsessiondetail',
+    name: 'inactivesessiondetail',
     props: ['deviceId'],
     data() {
       return {
         session: null,
         sessionData: {},
-        showAllValuesToggle: reactive({})
+        showAllValuesToggle: reactive({}),
+        socket: null,
       };
     },
     methods: {
-      fetchSession() {
-        axios.get(`${config.urlServer}/past-sessions`)
-          .then(response => {
-            const sessions = response.data;
-            this.session = sessions[this.deviceId] || null;
-          })
-          .catch(error => {
-            console.error("There was an error fetching the session!", error);
-          });
+      handleSessionUpdate(session) {
+        this.session = session;
+        this.handleSessionDataUpdate(session.data)
       },
-      fetchSessionData() {
-      axios.get(`${config.urlServer}/session_data/${this.deviceId}`)
-        .then(response => {
-          if (response.data) {
-            this.sessionData = response.data;
 
-            Object.keys(this.sessionData).forEach(key => {
-              if (!(key in this.showAllValuesToggle)) {
-                this.showAllValuesToggle[key] = false;
-              }
-            });
+      handleSessionDataUpdate(data) {
+        this.sessionData = data;
 
-            Object.keys(this.showAllValuesToggle).forEach(key => {
-              if (!(key in this.sessionData)) {
-                delete this.showAllValuesToggle[key];
-              }
-            });
-          } else {
-            this.sessionData = {};
-            this.showAllValuesToggle = reactive({}); 
+        Object.keys(this.sessionData).forEach(key => {
+          if (!(key in this.showAllValuesToggle)) {
+            this.showAllValuesToggle[key] = false;
           }
-        })
-        .catch(error => {
-          console.error("There was an error fetching the session data!", error);
         });
-    },
-    toggleShowAllValues(key) {
+
+        Object.keys(this.showAllValuesToggle).forEach(key => {
+          if (!(key in this.sessionData)) {
+            delete this.showAllValuesToggle[key];
+          }
+        });
+      },
+
+      toggleShowAllValues(key) {
         this.showAllValuesToggle[key] = !this.showAllValuesToggle[key];
+      },
+
+      clearSessionData() {
+        this.session = null;
+        this.sessionData = {};
+        this.showAllValuesToggle = {};
       }
     },
     mounted() {
-      this.fetchSession();
-      this.fetchSessionData();
+      this.socket = io(config.urlServer);
+
+      this.socket.emit('get_inactive_session', { device_id: this.deviceId });
+
+      this.socket.on('connect', () => {
+        console.log('Connected to server');
+        this.socket.emit('register_vue');
+      });
+
+      this.socket.on('disconnect', () => {
+        console.log('Vue disconnected from server');
+      });
+
+      //rozdelit metodu get_session na active a inactive
+
+      this.socket.on('unity_connected', () => {
+        console.log('Unity app connected from server');
+        this.clearSessionData();
+        this.$router.push('/activesessiondetail/' + this.deviceId);
+      });
+    },
+    beforeDestroy() {
+      if (this.socket) {
+        this.socket.disconnect();
+      }
     }
   };
-  </script>
+</script>
 
 <style>
-
-  .pastSessionData {
+  .inactiveSessionData {
     width: 60%;
     border-width: thin;
     border-style: solid;
@@ -148,5 +162,4 @@
   .value-item {
     padding: 2px 0; /* Space between values */
   }
-
 </style>

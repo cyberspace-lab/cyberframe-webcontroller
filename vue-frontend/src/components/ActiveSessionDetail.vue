@@ -45,93 +45,113 @@
   </div>
 </template>
   
-  <script>
-  import axios from 'axios';
+<script>
+  import { io } from 'socket.io-client';
   import config from '@/config.json';
   import { reactive } from 'vue';
-  
+
   export default {
-    name: 'controlpanel',
+    name: 'activesessiondetail',
     props: ['deviceId'],
     data() {
       return {
         session: null,
         applications: config.applications,
         sessionData: {},
-        showAllValuesToggle: reactive({})
+        showAllValuesToggle: reactive({}),
+        socket: null
       };
     },
     computed: {
       application() {
-      if (this.session) {
-        return this.applications[this.session.session_name] || null;
-      }
-      return null;
-    },
-  },
-    methods: {
-      fetchSession() {
-        axios.get(`${config.urlServer}/sessions`)
-          .then(response => {
-            const sessions = response.data;
-            this.session = sessions[this.deviceId] || null;
-          })
-          .catch(error => {
-            console.error("There was an error fetching the session!", error);
-          });
-        this.fetchSessionData();
+        if (this.session) {
+          return this.applications[this.session.session_name] || null;
+        }
+        return null;
       },
-      fetchSessionData() {
-      axios.get(`${config.urlServer}/session_data/${this.deviceId}`)
-        .then(response => {
-          if (response.data) {
-            this.sessionData = response.data;
-
-            Object.keys(this.sessionData).forEach(key => {
-              if (!(key in this.showAllValuesToggle)) {
-                this.showAllValuesToggle[key] = false;
-              }
-            });
-
-            Object.keys(this.showAllValuesToggle).forEach(key => {
-              if (!(key in this.sessionData)) {
-                delete this.showAllValuesToggle[key];
-              }
-            });
-          } else {
-            this.sessionData = {};
-            this.showAllValuesToggle = reactive({}); 
-          }
-        })
-        .catch(error => {
-          console.error("There was an error fetching the session data!", error);
-        });
     },
-      handleButtonClick(button) {
-      if (!this.session || !this.session.endpoint) {
-        console.error("Session or endpoint not found");
-        return;
-      }
+    methods: {
+      handleSessionUpdate(session) {
+        this.session = session;
+        this.handleSessionDataUpdate(session.data)
+      },
 
-      axios.post(this.session.endpoint, button.payload)
-        .then(response => {
-          console.log('Event sent to Unity:', response.data);
-        })
-        .catch(error => {
-          console.error('Error sending event to Unity:', error);
+      handleSessionDataUpdate(data) {
+        this.sessionData = data;
+
+        Object.keys(this.sessionData).forEach(key => {
+          if (!(key in this.showAllValuesToggle)) {
+            this.showAllValuesToggle[key] = false;
+          }
         });
+
+        Object.keys(this.showAllValuesToggle).forEach(key => {
+          if (!(key in this.sessionData)) {
+            delete this.showAllValuesToggle[key];
+          }
+        });
+      },
+
+      handleSessionDataKeyUpdate(data) {
+        this.sessionData[data.key] = data.value;
+      },
+
+      handleButtonClick(button) {
+        if (!this.session) {
+          console.error("Session not found");
+          return;
+        }
+        this.socket.emit('send_command', { sid: this.session.sid, payload: button.payload });
       },
 
       toggleShowAllValues(key) {
         this.showAllValuesToggle[key] = !this.showAllValuesToggle[key];
+      },
+
+      clearSessionData() {
+        this.session = null;
+        this.sessionData = {};
+        this.showAllValuesToggle = {};
       }
     },
     mounted() {
-      this.fetchSession();
-      setInterval(this.fetchSessionData, 5000); 
+      this.socket = io(config.urlServer);
+
+      this.socket.emit('get_active_session', { device_id: this.deviceId });
+
+      this.socket.on('connect', () => {
+        console.log('Connected to server');
+        this.socket.emit('register_vue');
+      });
+
+      this.socket.on('disconnect', () => {
+        console.log('Vue disconnected from server');
+      });
+
+      this.socket.on('unity_disconnected', () => {
+        console.log('Unity app disconnected from server');
+        this.clearSessionData();
+        this.$router.push('/inactivesessiondetail/' + this.deviceId);
+      });
+
+      this.socket.on('session', (data) => {
+        this.handleSessionUpdate(data.session);
+      });
+
+      this.socket.on('session_data', (data) => {
+        console.log('Received session data:', data);
+        if (data.device_id === this.deviceId) {
+          this.handleSessionDataKeyUpdate(data);
+        }
+      });
+    },
+    beforeDestroy() {
+      if (this.socket) {
+        this.socket.disconnect();
+      }
     }
   };
-  </script>
+</script>
 
 <style>
   .left {

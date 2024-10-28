@@ -1,14 +1,14 @@
 <template>
   <div>
-    <h1>Ongoing Sessions</h1>
-    <div v-if="sessions && Object.keys(sessions).length > 0">
+    <h1>Active Sessions</h1>
+    <div v-if="activeSessions && Object.keys(activeSessions).length > 0">
       <ul class="session-list">
         <li 
-          v-for="(session, deviceId) in sessions" 
+          v-for="(session, deviceId) in activeSessions" 
           :key="deviceId"
           class="session-item"
         >
-          <router-link :to="{ name: 'controlpanel', params: { deviceId: deviceId } }" class="session-link">
+          <router-link :to="{ name: 'activesessiondetail', params: { deviceId: deviceId } }" class="session-link">
             <div>
               <h5>{{ session.session_name }}</h5>
               <small>Device ID: {{ deviceId }}</small>
@@ -18,44 +18,56 @@
       </ul>
     </div>
     <div v-else>
-      <p>No ongoing sessions available.</p>
+      <p>No active sessions available.</p>
     </div>
 
     <div>
-      <button class="view-past-sessions-btn" @click="goToPastSessions">View Past Sessions</button>
+      <button class="view-inactive-sessions-btn" @click="goToInactiveSessions">View inactive sessions</button>
     </div>
   </div>
 </template>
   
   <script>
-  import axios from 'axios';
+  import { io } from 'socket.io-client';
   import config from '@/config.json';
   
   export default {
-    name: 'ongoingsessions',
+    name: 'activesessions',
     data() {
       return {
-        sessions: {},
+        activeSessions: {},
+        socket: null
       };
     },
     methods: {
-      fetchSessions() {
-        axios.get(`${config.urlServer}/sessions`)
-          .then(response => {
-            this.sessions = response.data;
-          })
-          .catch(error => {
-            console.error("There was an error fetching the sessions!", error);
-          });
+      goToInactiveSessions() {
+       this.$router.push('/inactivesessions');
       },
-      goToPastSessions() {
-        this.$router.push('/past-sessions');
-      }
+      handleActiveSessionsUpdate(activeSessions) {
+        this.activeSessions = activeSessions;
+      },
     },
     mounted() {
-      this.fetchSessions();
-      setInterval(this.fetchSessions, 5000);
+      this.socket = io(config.urlServer);
+
+      this.socket.on('connect', () => {
+        console.log('Connected to server');
+        this.socket.emit('register_vue');
+      });
+
+      this.socket.on('disconnect', () => {
+        console.log('Vue disconnected from server');
+      });
+
+      this.socket.on('active_sessions_update', (data) => {
+        this.handleActiveSessionsUpdate(data);
+      });
     },
+    beforeDestroy() {
+      if (this.socket) {
+        this.socket.disconnect();
+      }
+    }
   };
   </script>
 
@@ -96,7 +108,7 @@
     color: #666;
   }
 
-  .view-past-sessions-btn {
+  .view-inactive-sessions-btn {
     margin-top: 20px;
     padding: 10px 20px;
     background-color: #007bff;
@@ -107,7 +119,7 @@
     transition: background-color 0.3s;
   }
 
-  .view-past-sessions-btn:hover {
+  .view-inactive-sessions-btn:hover {
     background-color: #0056b3;
   }
 </style>
