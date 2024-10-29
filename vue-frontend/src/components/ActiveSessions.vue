@@ -12,6 +12,10 @@
             <div>
               <h5>{{ session.session_name }}</h5>
               <small>Device ID: {{ deviceId }}</small>
+              <br>
+              <small>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</small>
+              <br>
+              <small>Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</small>
             </div>
           </router-link>
         </li>
@@ -27,16 +31,12 @@
   </div>
 </template>
   
-  <script>
-  import { io } from 'socket.io-client';
-  import config from '@/config.json';
-  
+<script>
   export default {
     name: 'activesessions',
     data() {
       return {
-        activeSessions: {},
-        socket: null
+        activeSessions: {}
       };
     },
     methods: {
@@ -48,28 +48,15 @@
       },
     },
     mounted() {
-      this.socket = io(config.urlServer);
+      this.$socket.emit('get_active_sessions');
 
-      this.socket.on('connect', () => {
-        console.log('Connected to server');
-        this.socket.emit('register_vue');
-      });
-
-      this.socket.on('disconnect', () => {
-        console.log('Vue disconnected from server');
-      });
-
-      this.socket.on('active_sessions_update', (data) => {
-        this.handleActiveSessionsUpdate(data);
-      });
+      this.$socket.on('active_sessions_update', this.handleActiveSessionsUpdate);
     },
-    beforeDestroy() {
-      if (this.socket) {
-        this.socket.disconnect();
-      }
+    beforeUnmount() {
+      this.$socket.off('active_sessions_update', this.handleActiveSessionsUpdate);
     }
   };
-  </script>
+</script>
 
 <style>
   .session-list {

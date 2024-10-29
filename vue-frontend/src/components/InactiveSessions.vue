@@ -8,12 +8,15 @@
           :key="deviceId" 
           class="inactive-session-item"
         >
-          <router-link 
-            :to="{ name: 'inactivesessiondetail', params: { deviceId: deviceId } }" 
-            class="inactive-session-link"
-          >
-            {{ session.session_name }} <br>
-            <small>(Device ID: {{ deviceId }})</small>
+          <router-link :to="{ name: 'inactivesessiondetail', params: { deviceId: deviceId } }" class="inactive-session-link">
+            <div>
+              <h5>{{ session.session_name }} </h5>
+              <small>(Device ID: {{ deviceId }})</small>
+              <br>
+              <small>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</small>
+              <br>
+              <small>Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</small>
+            </div>
           </router-link>
         </li>
       </ul>
@@ -21,46 +24,36 @@
     <div v-else>
       <p>No inactive sessions available.</p>
     </div>
+
+    <div>
+      <button class="view-active-sessions-btn" @click="goToActiveSessions">View active sessions</button>
+    </div>
   </div>
 </template>
 
-<script>
-  import { io } from 'socket.io-client';
-  import config from '@/config.json';
-  
+<script>  
   export default {
     name: 'inactivesessions',
     data() {
       return {
-        inactiveSessions: {},
-        socket: null,
+        inactiveSessions: {}
       };
     },
     methods: {
+      goToActiveSessions() {
+       this.$router.push('/activesessions');
+      },
       handleInactiveSessionsUpdate(inactiveSessions) {
         this.inactiveSessions = inactiveSessions;
       }
     },
     mounted() {
-      this.socket = io(config.urlServer);
+      this.$socket.emit('get_inactive_sessions');
 
-      this.socket.on('connect', () => {
-        console.log('Connected to server');
-        this.socket.emit('register_vue');
-      });
-
-      this.socket.on('disconnect', () => {
-        console.log('Vue disconnected from server');
-      });
-
-      this.socket.on('inactive_sessions_update', (data) => {
-        this.handleInactiveSessionsUpdate(data);
-      });
+      this.$socket.on('inactive_sessions_update', this.handleInactiveSessionsUpdate);
     },
-    beforeDestroy() {
-      if (this.socket) {
-        this.socket.disconnect();
-      }
+    beforeUnmount() {
+      this.$socket.off('inactive_sessions_update', this.handleInactiveSessionsUpdate);
     }
   };
 </script>
@@ -92,7 +85,28 @@
     padding: 15px;
   }
 
+  .inactive-session-link h5 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
   .inactive-session-link small {
     color: #666;
+  }
+
+  .view-active-sessions-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .view-active-sessions-btn:hover {
+    background-color: #0056b3;
   }
 </style>

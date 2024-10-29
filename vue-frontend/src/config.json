@@ -50,6 +50,7 @@
         ]
       }
     },
-    "urlServer": "http://localhost:4000",
-    "a":"http://13.60.19.254:4000"
+    "urlServer": "http://13.60.19.254:4000",
+    "urlServer_local": "http://localhost:4000",
+    "urlServer_aws": "http://13.60.19.254:4000"
   }

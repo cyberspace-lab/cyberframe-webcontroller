@@ -22,6 +22,8 @@
           </div>
         </div>
 
+        <button @click="saveSessionAsJson">Save session as JSON</button>
+
       </template>
 
       <template v-else>
@@ -32,9 +34,7 @@
 </template>
 
 <script>
-  import { io } from 'socket.io-client';
   import { reactive } from 'vue';
-  import config from '@/config.json';
   
   export default {
     name: 'inactivesessiondetail',
@@ -43,18 +43,14 @@
       return {
         session: null,
         sessionData: {},
-        showAllValuesToggle: reactive({}),
-        socket: null,
+        showAllValuesToggle: reactive({})
       };
     },
     methods: {
-      handleSessionUpdate(session) {
-        this.session = session;
-        this.handleSessionDataUpdate(session.data)
-      },
-
-      handleSessionDataUpdate(data) {
-        this.sessionData = data;
+      handleInactiveSession(data) {
+        if (this.deviceId != data.device_id) return;
+        this.session = data.session;
+        this.sessionData = data.session.data;
 
         Object.keys(this.sessionData).forEach(key => {
           if (!(key in this.showAllValuesToggle)) {
@@ -73,38 +69,58 @@
         this.showAllValuesToggle[key] = !this.showAllValuesToggle[key];
       },
 
-      clearSessionData() {
+      handleUnityConnected() {
+        if (this.deviceId != data.device_id) return;
+        console.log('Unity app connected from server');
         this.session = null;
         this.sessionData = {};
         this.showAllValuesToggle = {};
+        this.$router.push('/activesessiondetail/' + this.deviceId);
+      },
+
+      emitGetInactiveSession() {
+        this.$socket.emit('get_inactive_session', { device_id: this.deviceId });
+      },
+
+      saveSessionAsJson() {
+        if (this.session) {
+          const formattedSession = {
+            ...this.session,
+            start_time: new Date(this.session.start_time * 1000).toLocaleString(),
+            last_ping: new Date(this.session.last_ping * 1000).toLocaleString()
+          };
+
+          const dataStr = JSON.stringify(formattedSession, null, 2);
+          const blob = new Blob([dataStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${this.session.session_name || 'session'}.json`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          URL.revokeObjectURL(url);
+        } else {
+          console.warn('No session data available to save.');
+        }
       }
     },
     mounted() {
-      this.socket = io(config.urlServer);
+      if (this.$socket.connected) {
+        this.emitGetInactiveSession();
+      } else {
+        this.$socket.on('connect', this.emitGetInactiveSession);
+      };
 
-      this.socket.emit('get_inactive_session', { device_id: this.deviceId });
-
-      this.socket.on('connect', () => {
-        console.log('Connected to server');
-        this.socket.emit('register_vue');
-      });
-
-      this.socket.on('disconnect', () => {
-        console.log('Vue disconnected from server');
-      });
-
-      //rozdelit metodu get_session na active a inactive
-
-      this.socket.on('unity_connected', () => {
-        console.log('Unity app connected from server');
-        this.clearSessionData();
-        this.$router.push('/activesessiondetail/' + this.deviceId);
-      });
+      this.$socket.on('inactive_session', this.handleInactiveSession);
+      this.$socket.on('unity_connected', this.handleUnityConnected);
     },
-    beforeDestroy() {
-      if (this.socket) {
-        this.socket.disconnect();
-      }
+    beforeUnmount() {
+      this.$socket.off('inactive_session', this.handleInactiveSession);
+      this.$socket.off('unity_connected', this.handleUnityConnected);
+      this.$socket.off('connect', this.emitGetInactiveSession);
     }
   };
 </script>

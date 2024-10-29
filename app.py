@@ -36,9 +36,9 @@ def handle_disconnect():
 
     for device_id, session in sessions.items():
         if session['sid'] == request.sid:
-            session['end_time'] = time()
+            session['last_ping'] = time()
             session['is_connected'] = False
-            emit('unity_disconnected', room=vue_session_id)
+            emit('unity_disconnected', {'device_id': device_id}, room=vue_session_id)
             break
 
     emit_sessions_update()
@@ -63,7 +63,7 @@ def handle_register(data):
     sessions[device_id] = {
         'session_name': session_name,
         'start_time': time(),
-        'end_time': None,
+        'last_ping': time(),
         'data': {},
         'sid': request.sid,
         'is_connected': True
@@ -77,7 +77,7 @@ def handle_register(data):
             sessions[device_id]['data'][key] = []
 
     emit('registered', room=request.sid)
-    emit('unity_connected', room=request.sid)
+    emit('unity_connected', room=vue_session_id)
     emit_sessions_update()
 
 @socketio.on('send_command')
@@ -108,6 +108,7 @@ def handle_update_data(data):
             sessions[device_id]['data'][key] = []
 
         sessions[device_id]['data'][key].insert(0, value)
+        sessions[device_id]['last_ping'] = time()
 
         session_name = sessions[device_id]['session_name']
         max_history_size = max_history_cache.get((session_name, key))
@@ -120,10 +121,20 @@ def handle_update_data(data):
         if len(sessions[device_id]['data'][key]) > max_history_size:
             sessions[device_id]['data'][key] = sessions[device_id]['data'][key][:max_history_size]
 
-        emit_session_data({'device_id': device_id, 'key': key, 'value': sessions[device_id]['data'][key]})
+        emit_session_data_key_update({'device_id': device_id, 'key': key})
 
     except Exception as e:
         emit('error', str(e), room=request.sid)
+
+@socketio.on('get_active_sessions')
+def handle_get_active_sessions():
+    emit('active_sessions_update', get_active_sessions(), room=vue_session_id)
+    app.logger.info(f'Active sessions emmited to: {str(vue_session_id)}')
+
+@socketio.on('get_inactive_sessions')
+def handle_get_inactive_sessions():
+    emit('inactive_sessions_update', get_inactive_sessions(), room=vue_session_id)
+    app.logger.info(f'Inactive sessions emmited to: {str(vue_session_id)}')
 
 @socketio.on('get_active_session')
 def handle_get_active_session(data):
@@ -135,8 +146,8 @@ def handle_get_active_session(data):
         return
     
     if device_id in sessions and sessions[device_id].get('is_connected'):
-        emit('session', {'device_id': device_id, 'session': sessions[device_id]}, room=vue_session_id)
-        app.logger.info(f"Session emitted: {sessions[device_id]}")
+        emit('active_session', {'device_id': device_id, 'session': sessions[device_id]}, room=vue_session_id)
+        app.logger.info(f"Active session emitted: {sessions[device_id]}")
 
 @socketio.on('get_inactive_session')
 def handle_get_inactive_session(data):
@@ -148,25 +159,24 @@ def handle_get_inactive_session(data):
         return
     
     if device_id in sessions and not sessions[device_id].get('is_connected'):
-        emit('session', {'device_id': device_id, 'session': sessions[device_id]}, room=vue_session_id)
-        app.logger.info(f"Session emitted: {sessions[device_id]}")
+        emit('inactive_session', {'device_id': device_id, 'session': sessions[device_id]}, room=vue_session_id)
+        app.logger.info(f"Inactive session emitted: {sessions[device_id]}")
 
-def emit_session_data(data):
+def emit_session_data_key_update(data):
     device_id = data.get('device_id')
     key = data.get('key')
-    value = data.get('value')
 
     if not device_id:
         emit('error', {'message': 'device_id is required to fetch session data'})
         return
 
     if device_id in sessions:
-        emit('session_data', {'device_id': device_id, 'key': key, 'value': sessions[device_id]['data'][key]}, room=vue_session_id)
+        emit('session_data_key_update', {'device_id': device_id, 'key': key, 'value': sessions[device_id]['data'][key]}, room=vue_session_id)
 
 def emit_sessions_update():
     emit('active_sessions_update', get_active_sessions(), room=vue_session_id)
     emit('inactive_sessions_update', get_inactive_sessions(), room=vue_session_id)
-    app.logger.info(f'Sessions update emmited to: {str(vue_session_id)}')
+    app.logger.info(f'Sessions emmited to: {str(vue_session_id)}')
 
 def get_active_sessions():
     return {device_id: session for device_id, session in sessions.items() if session.get('is_connected')}

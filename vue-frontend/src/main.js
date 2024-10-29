@@ -2,12 +2,28 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import { io } from 'socket.io-client';
+import config from '@/config.json';
 
 import './assets/main.css';
 
-const socket = io('http://localhost:4000');
+const socket = io(config.urlServer);
+
+socket.on('connect', () => {
+    console.log('Vue connected to server');
+    socket.emit('register_vue');
+});
+
+socket.on('disconnect', () => {
+    console.log('Vue disconnected from server');
+});
+
+window.addEventListener('beforeunload', () => {
+    socket.disconnect();
+});
 
 const app = createApp(App);
+
+app.config.globalProperties.$socket = socket;
 
 app.provide('socket', socket);
 app.use(router);
