@@ -251,6 +251,7 @@ a:hover {
   padding: 20px;
   height: 168px;
   width: 1230px;
+  overflow-y: auto;
 }
 
 .command-buttons-container {
@@ -293,6 +294,7 @@ a:hover {
   margin-top: 20px;
   width: 1230px;
   height: 580px;
+  overflow-y: auto;
 }
 
 .session-data-item {
@@ -331,4 +333,30 @@ a:hover {
 
 .value-item {
   padding: 2px 0;
+}
+
+.inactive-session-data {
+  border: 1px solid #c9c9c9;
+  padding: 20px;
+  width: 1230px;
+  height: 740px;
+  margin-top: 20px;
+}
+
+.delete-button {
+  background: linear-gradient(225deg, transparent 15px, red 15px);
+  width: 250px;
+  height: 50px;
+  font-size: 1em;
+  color: white;
+  font-weight: bold;
+  border: none;
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.delete-button:hover {
+  background: linear-gradient(225deg, transparent 15px, #ff00ff 15px);
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
 }

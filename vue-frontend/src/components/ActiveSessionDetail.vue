@@ -73,7 +73,7 @@
   </div>
 
   <div v-else>
-    <p>No application selected or application not found.</p>
+    <p class="no-sessions-text">No application selected or application not found.</p>
   </div>
 </template>
   

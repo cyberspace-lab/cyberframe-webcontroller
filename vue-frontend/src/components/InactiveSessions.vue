@@ -1,32 +1,32 @@
 <template>
   <div>
-    <h1>Inactive Sessions</h1>
+    <div class="banner">
+      <h1>Inactive Sessions</h1>
+      <button class="banner-button" @click="goToActiveSessions">VIEW ACTIVE SESSIONS</button>
+    </div>
     <div v-if="inactiveSessions && Object.keys(inactiveSessions).length > 0">
-      <ul class="inactive-session-list">
+      <ul class="session-list">
         <li 
           v-for="(session, deviceId) in inactiveSessions" 
           :key="deviceId" 
-          class="inactive-session-item"
+          class="session-item"
         >
-          <router-link :to="{ name: 'inactivesessiondetail', params: { deviceId: deviceId } }" class="inactive-session-link">
-            <div>
-              <h5>{{ session.session_name }} </h5>
-              <small>(Device ID: {{ deviceId }})</small>
-              <br>
-              <small>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</small>
-              <br>
-              <small>Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</small>
+          <router-link :to="{ name: 'inactivesessiondetail', params: { deviceId: deviceId } }" class="session-link">
+            <div class="session-link-title">
+              <h5>{{ session.session_name }}</h5>
+              <small class="session-link-device">DEVICE ID: {{ deviceId }}</small>
             </div>
+            <div class="session-link-time">
+              <small>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</small>
+              <small class="session-link-last-ping">Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</small>
+            </div>
+            <p class="view-detail">VIEW DETAIL →</p>
           </router-link>
         </li>
       </ul>
     </div>
     <div v-else>
-      <p>No inactive sessions available.</p>
-    </div>
-
-    <div>
-      <button class="view-active-sessions-btn" @click="goToActiveSessions">View active sessions</button>
+      <p class="no-sessions-text">NO INACTIVE SESSIONS AVAILABLE</p>
     </div>
   </div>
 </template>

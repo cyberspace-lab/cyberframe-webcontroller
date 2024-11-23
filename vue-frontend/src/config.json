@@ -27,6 +27,33 @@
               "eventName": "sendInput",
               "parameters": {}
             }
+          },
+          {
+            "title": "Send with Input 2",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "sendInput2",
+              "parameters": {}
+            }
+          },
+          {
+            "title": "Send with Input 3",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "sendInput3",
+              "parameters": {}
+            }
+          },
+          {
+            "title": "Send with Input 4",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "sendInput4",
+              "parameters": {}
+            }
           }
         ],
         "receivers": [
@@ -76,7 +103,7 @@
         ]
       }
     },
-    "urlServer": "http://localhost:4000",
+    "urlServer": "http://100.71.213.45:4000",
     "urlServer_local": "http://localhost:4000",
     "urlServer_aws": "http://13.60.19.254:4000",
     "urlServer_cyberspace": "http://100.71.213.45:4000",

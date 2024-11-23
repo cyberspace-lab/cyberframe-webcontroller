@@ -6,7 +6,7 @@
     </div>
     <div v-if="activeSessions && Object.keys(activeSessions).length > 0">
       <ul class="session-list">
-        <li 
+        <li
           v-for="(session, deviceId) in activeSessions" 
           :key="deviceId"
           class="session-item"

@@ -1,64 +1,136 @@
 <template>
-    <div>
-      <h1>Inactive Session Detail</h1>
+<div class="detail-container" v-if="application">
 
-      <template v-if="session">
+<div class="left">
 
-        <p>Device ID: {{ deviceId }}</p>
-        <p>Session Name: {{ session.session_name }}</p>
-        <p>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
-        <p>Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
-        <button @click="deleteSession">Delete Session</button>
+  <div>
+    <template v-if="session">
+      <p class="session-name">{{ session.session_name }}</p>
+      <p class="device-id">DEVICE ID: {{ deviceId }}</p>
+      <div class="session-time-container">
+        <p class="session-time">Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
+        <p class="session-time2">Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
+      </div>
+      <div class="button-container">
+        <button class="save-button" @click="saveSessionAsJson">SAVE SESSION AS JSON</button>
+        <button class="back-button" @click="goToInactiveSessions">BACK TO INACTIVE SESSIONS</button>
+      </div>
+    </template>
+    <template v-else>
+      <p>Session with device {{ this.deviceId }} not connected.</p>
+    </template>
+  </div>
+  
+  <div class="map">
+  <LatestPositions
+    v-if="shouldRenderLatestPositions"
+    :positions="parsedPositions"
+    :mapUrl="currentMapUrl"
+    :realWidth="realMapWidth" 
+    :realHeight="realMapHeight"
+    :maxWidth="600"
+    :maxHeight="800"
+  />
+  </div>
 
-        <div class="inactiveSessionData">
-          <h1>Session Data</h1>
-          <div v-for="(values, key) in filteredSessionData" :key="key" class="sessionDataItem">
-            <div class="key-value-header" @click="toggleShowAllValues(key)">
-              <h3>{{ key }}: </h3>
-              <span>{{ values[0] }}</span>
-            </div>
-            <div v-if="showAllValuesToggle[key]" class="values-container">
-              <div v-for="(value, index) in values.slice(1)" :key="index" class="value-item">{{ value }}</div>
-            </div>
-          </div>
-        </div>
+</div>
 
-        <button @click="saveSessionAsJson">Save session as JSON</button>
+<div class="right">
 
-      </template>
+  <button class="delete-button" @click="deleteSession">DELETE SESSION</button>
 
-      <template v-else>
-        <p>Session with device {{ this.deviceId }} not found.</p>
-      </template>
-
-      <router-link :to="{ name: 'inactivesessions' }">
-        <button>Back to Inactive Sessions</button>
-      </router-link>
-
+<div class="inactive-session-data">
+  <h1 class="container-title">Session Data</h1>
+  <div v-for="(values, key) in filteredSessionData" :key="key" class="session-data-item">
+    <div class="key-value-header" @click="toggleShowAllValues(key)">
+      <h3 class="key-value-header-name">{{ key }}: </h3>
+      <span class="key-value-header-value">{{ values[0] }}</span>
     </div>
+    <div v-if="showAllValuesToggle[key]" class="values-container">
+      <div v-for="(value, index) in values.slice(1)" :key="index" class="value-item">{{ value }}</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</div>
+
+<div v-else>
+  <p class="no-sessions-text">No application selected or application not found.</p>
+</div>
 </template>
 
 <script>
+  import config from '@/config.json';
   import { reactive } from 'vue';
+  import LatestPositions from './LatestPositions.vue';
   
   export default {
     name: 'inactivesessiondetail',
     props: ['deviceId'],
+    components: {
+      LatestPositions,
+    },
     data() {
       return {
         session: null,
+        applications: config.applications,
         sessionData: {},
         showAllValuesToggle: reactive({})
       };
     },
     computed: {
+      application() {
+        if (this.session) {
+          return this.applications[this.session.session_name] || null;
+        }
+        return null;
+      },
+      parsedPositions() {
+        return this.sessionData.position.map(position => JSON.parse(position));
+      },
       filteredSessionData() {
         return Object.fromEntries(
           Object.entries(this.sessionData).filter(([key]) => key !== 'position')
         );
+      },
+      currentLevelID() {
+        return this.parsedPositions.length > 0 ? this.parsedPositions[0][0].levelID : null;
+      },
+      currentMapUrl() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap ? levelMap[this.currentLevelID].url : '';
+      },
+      realMapWidth() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].realWidth : null;
+      },
+      realMapHeight() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].realHeight : null;
+      },
+      shouldRenderLatestPositions() {
+        return (
+          this.application &&
+          this.application.levels && 
+          Array.isArray(this.application.levels) &&
+          this.application.receivers && 
+          this.application.receivers.some(receiver => receiver.position)
+        );
       }
     },
     methods: {
+      goToInactiveSessions() {
+       this.$router.push('/inactivesessions');
+      },
+
       handleInactiveSession(data) {
         if (this.deviceId != data.device_id) return;
         this.session = data.session;
@@ -143,13 +215,3 @@
     }
   };
 </script>
-
-<style>
-  .inactiveSessionData {
-    width: 60%;
-    border-width: thin;
-    border-style: solid;
-    border-radius: 10px;
-    margin: 0 auto;
-  }
-</style>
