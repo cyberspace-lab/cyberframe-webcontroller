@@ -8,10 +8,11 @@
         <p>Session Name: {{ session.session_name }}</p>
         <p>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
         <p>Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
+        <button @click="deleteSession">Delete Session</button>
 
         <div class="inactiveSessionData">
           <h1>Session Data</h1>
-          <div v-for="(values, key) in sessionData" :key="key" class="sessionDataItem">
+          <div v-for="(values, key) in filteredSessionData" :key="key" class="sessionDataItem">
             <div class="key-value-header" @click="toggleShowAllValues(key)">
               <h3>{{ key }}: </h3>
               <span>{{ values[0] }}</span>
@@ -30,6 +31,10 @@
         <p>Session with device {{ this.deviceId }} not found.</p>
       </template>
 
+      <router-link :to="{ name: 'inactivesessions' }">
+        <button>Back to Inactive Sessions</button>
+      </router-link>
+
     </div>
 </template>
 
@@ -45,6 +50,13 @@
         sessionData: {},
         showAllValuesToggle: reactive({})
       };
+    },
+    computed: {
+      filteredSessionData() {
+        return Object.fromEntries(
+          Object.entries(this.sessionData).filter(([key]) => key !== 'position')
+        );
+      }
     },
     methods: {
       handleInactiveSession(data) {
@@ -80,6 +92,13 @@
 
       emitGetInactiveSession() {
         this.$socket.emit('get_inactive_session', { device_id: this.deviceId });
+      },
+
+      deleteSession() {
+        if (confirm("Are you sure you want to delete this session?")) {
+          this.$socket.emit('delete_session', { device_id: this.deviceId });
+          this.$router.push({ name: 'inactivesessions' });
+        }
       },
 
       saveSessionAsJson() {
@@ -132,50 +151,5 @@
     border-style: solid;
     border-radius: 10px;
     margin: 0 auto;
-  }
-
-  .sessionDataItem {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .sessionDataItem h3 {
-    margin: 0;
-    margin-right: 5px;
-  }
-
-  .sessionDataItem span {
-    flex: 1;
-  }
-
-  .sessionDataItem {
-    margin-bottom: 15px;
-  }
-
-  .key-value-header {
-    display: flex;
-    align-items: center;
-  }
-
-  .key-value-header h3 {
-    margin: 0;
-    margin-right: 10px;
-  }
-
-  .key-value-header span {
-    flex: 1;
-  }
-
-  .values-container {
-    max-height: 100px; /* Adjust this height as needed */
-    overflow-y: auto;
-    margin-top: 5px;
-    padding-left: 20px; /* Indent values slightly */
-    border-left: 2px solid #ddd; /* Optional: visual separation */
-  }
-
-  .value-item {
-    padding: 2px 0; /* Space between values */
   }
 </style>

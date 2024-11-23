@@ -1,46 +1,78 @@
 <template>
-  <div v-if="application">
+  <div class="detail-container" v-if="application">
 
     <div class="left">
 
-      <div class="sessionDetail">
-        <h1 class="title">Session Detail</h1>
+      <div>
         <template v-if="session">
-          <p>Device ID: {{ deviceId }}</p>
-          <p>Session Name: {{ session.session_name }}</p>
-          <p>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
-          <p>Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
+          <p class="session-name">{{ session.session_name }}</p>
+          <p class="device-id">DEVICE ID: {{ deviceId }}</p>
+          <div class="session-time-container">
+            <p class="session-time">Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
+            <p class="session-time2">Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
+          </div>
+          <div class="button-container">
+            <button class="save-button" @click="saveSessionAsJson">SAVE SESSION AS JSON</button>
+            <button class="back-button" @click="goToActiveSessions">BACK TO ACTIVE SESSIONS</button>
+          </div>
         </template>
         <template v-else>
           <p>Session with device {{ this.deviceId }} not connected.</p>
         </template>
       </div>
       
-      <div class="controlPanel">
-        <h1>{{ application.name }} Control Panel</h1>
-        <button v-for="(button, index) in application.controlButtons" :key="index" @click="handleButtonClick(button)">
-          {{ button.title }}
-        </button>
+      <div class="map">
+      <LatestPositions
+        v-if="shouldRenderLatestPositions"
+        :positions="parsedPositions"
+        :mapUrl="currentMapUrl"
+        :realWidth="realMapWidth" 
+        :realHeight="realMapHeight"
+        :maxWidth="600"
+        :maxHeight="800"
+      />
       </div>
+
     </div>
 
-    <div class="sessionData">
-      <h1>Session Data</h1>
-      <div v-for="(values, key) in sessionData" :key="key" class="sessionDataItem">
+    <div class="right">
+
+    <div class="control-panel">
+        <h1 class="container-title">{{ application.name }} Control Panel</h1>
+        <div class="command-buttons-container">
+          <div class="command" v-for="(button, index) in application.controlButtons" :key="index">
+          <template v-if="button.requiresInput">
+            <input 
+              v-model="dynamicInputs[index]" 
+              :placeholder="button.inputPlaceholder || 'ENTER VALUE'" 
+              class="command-input"
+            />
+          </template>
+          <button class="command-button" @click="handleButtonClick(button, dynamicInputs[index])">
+            {{ button.title }}
+          </button>
+        </div>
+        </div>
+      </div>
+
+    <div class="session-data">
+      <h1 class="container-title">Session Data</h1>
+      <div v-for="(values, key) in filteredSessionData" :key="key" class="session-data-item">
         <div class="key-value-header" @click="toggleShowAllValues(key)">
-          <h3>{{ key }}: </h3>
-          <span>{{ values[0] }}</span>
+          <h3 class="key-value-header-name">{{ key }}: </h3>
+          <span class="key-value-header-value">{{ values[0] }}</span>
         </div>
         <div v-if="showAllValuesToggle[key]" class="values-container">
           <div v-for="(value, index) in values.slice(1)" :key="index" class="value-item">{{ value }}</div>
         </div>
       </div>
     </div>
-    <button class="save-button" @click="saveSessionAsJson">Save session as JSON</button>
+
+  </div>
+
   </div>
 
   <div v-else>
-    <h1>Session Detail</h1>
     <p>No application selected or application not found.</p>
   </div>
 </template>
@@ -48,16 +80,21 @@
 <script>
   import config from '@/config.json';
   import { reactive } from 'vue';
+  import LatestPositions from './LatestPositions.vue';
 
   export default {
     name: 'activesessiondetail',
     props: ['deviceId'],
+    components: {
+      LatestPositions,
+    },
     data() {
       return {
         session: null,
         applications: config.applications,
         sessionData: {},
-        showAllValuesToggle: reactive({})
+        showAllValuesToggle: reactive({}),
+        dynamicInputs: []
       };
     },
     computed: {
@@ -67,14 +104,65 @@
         }
         return null;
       },
+      parsedPositions() {
+        return this.sessionData.position.map(position => JSON.parse(position));
+      },
+      filteredSessionData() {
+        return Object.fromEntries(
+          Object.entries(this.sessionData).filter(([key]) => key !== 'position')
+        );
+      },
+      currentLevelID() {
+        return this.parsedPositions.length > 0 ? this.parsedPositions[0][0].levelID : null;
+      },
+      currentMapUrl() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap ? levelMap[this.currentLevelID].url : '';
+      },
+      realMapWidth() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].realWidth : null;
+      },
+      realMapHeight() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].realHeight : null;
+      },
+      shouldRenderLatestPositions() {
+        return (
+          this.application && 
+          this.application.levels && 
+          Array.isArray(this.application.levels) &&
+          this.application.receivers && 
+          this.application.receivers.some(receiver => receiver.position)
+        );
+      }
     },
     methods: {
-      handleButtonClick(button) {
+      goToActiveSessions() {
+       this.$router.push('/activesessions');
+      },
+
+      handleButtonClick(button, inputValue) {
         if (!this.session) {
           console.error("Session not found");
           return;
         }
-        this.$socket.emit('send_command', { sid: this.session.sid, payload: button.payload });
+
+        const payload = {
+          ...button.payload,
+          parameters: {
+            ...button.payload.parameters,
+            userInput: inputValue
+          }
+        };
+
+        this.$socket.emit('send_command', { sid: this.session.sid, payload });
       },
 
       toggleShowAllValues(key) {
@@ -162,87 +250,3 @@
     }
   };
 </script>
-
-<style>
-  .left {
-    width: 47%;
-    float: left;
-    padding: 0px;
-    margin-bottom: 20px;
-  }
-  
-  .sessionDetail {
-    height: 25vh;
-    padding: 0px;
-  }
-
-  .title {
-    margin-top: 0px;
-  }
-
-  .controlPanel {
-    height: 60vh;
-    border-width: thin;
-    border-style: solid;
-    border-radius: 10px;
-  }
-
-  .sessionData {
-    width: 47%;
-    height: 85vh;
-    float: right;
-    border-width: thin;
-    border-style: solid;
-    border-radius: 10px;
-    margin-bottom: 20px;
-  }
-
-  .sessionDataItem {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .sessionDataItem h3 {
-    margin: 0;
-    margin-right: 5px;
-  }
-
-  .sessionDataItem span {
-    flex: 1;
-  }
-
-  .sessionDataItem {
-    margin-bottom: 15px;
-  }
-
-  .key-value-header {
-    display: flex;
-    align-items: center;
-  }
-
-  .key-value-header h3 {
-    margin: 0;
-    margin-right: 10px;
-  }
-
-  .key-value-header span {
-    flex: 1;
-  }
-
-  .values-container {
-    max-height: 100px; /* Adjust this height as needed */
-    overflow-y: auto;
-    margin-top: 5px;
-    padding-left: 20px; /* Indent values slightly */
-    border-left: 2px solid #ddd; /* Optional: visual separation */
-  }
-
-  .value-item {
-    padding: 2px 0; /* Space between values */
-  }
-
-  .save-button {
-    margin-top: 20px;
-  }
-</style>

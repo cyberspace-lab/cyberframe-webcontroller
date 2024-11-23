@@ -1,34 +1,334 @@
 body {
-  font-family: 'Arial, sans-serif';
-  background-color: #f9f9f9;
+  font-family: "Helvetica", "Arial", sans-serif;
+  background-color: #ffffff;
 }
 
-div {
-  padding: 20px;
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background-image: url(/src/assets/banner.png);
+  background-position-y: 215px;
+  background-position-x: center;
+  background-size: 120.8em;
+  z-index: 1000;
+  padding: 0px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(189 0 255 / 46%);
+  z-index: -1;
 }
 
 h1 {
-  color: #333;
-  text-align: center;
-  font-size: 2em;
-  margin-bottom: 20px;
+  color: #ffffff;
+  font-size: 4.5em;
+  margin-left: 6%;
 }
 
-p {
-  text-align: center;
-  color: #666;
-}
-
-button {
-  display: block;
-  width: 200px;
-  margin: 20px auto;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
+.banner-button {
+  background: linear-gradient(225deg, transparent 15px, white 15px);
+  width: 320px;
+  height: 60px;
+  margin-right: 6%;
+  font-size: 1.15em;
+  color: #ff00ff;
+  font-weight: bold;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.banner-button:hover {
+  background: linear-gradient(225deg, transparent 15px, #ff00ff 15px);
+  color: white;
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.no-sessions-text {
+  font-size: 1.3em;
+  color: #ff00ff;
+  font-weight: bold;
+  margin-top: 190px;
+  text-align: center;
+}
+
+.session-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  margin-top: 150px;
+  padding-left: 5.5%;
+  padding-right: 5.5%;
+}
+
+.session-item {
+  --s: 32px;
+  --b: 1px;
+  --c: #ccc;
+  margin-bottom: 15px;
+  border: var(--b) solid var(--c);
+  clip-path: polygon(0 0, calc(100% - var(--s)) 0, 100% var(--s), 100% 100%, 0 100%);
+  background: linear-gradient(-135deg, var(--c) calc(0.707* var(--s) + var(--b)), #0000 0) border-box;
+}
+
+.session-item:hover {
+  transform: translateY(-1px);
+}
+
+.view-detail {
+  color: #ff00ff;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  font-weight: bold;
+  font-size: 1.25em;
+  margin-left: 11%;
+}
+
+.session-link:hover .view-detail {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.session-link {
+  display: flex;
+  text-decoration: none;
+  padding: 32px;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.session-link-title {
+  padding-left: 6px;
+  font-weight: bold;
+}
+
+.session-link h5 {
+  margin: 0;
+  color: black;
+  font-size: 1.5em;
+}
+
+.session-link-device {
+  color: #ff00ff;
+  font-size: 1.2em;
+}
+
+.session-link-time {
+  color: black;
+  font-size: 1.2em;
+  margin-left: 160px;
+}
+
+.session-link-last-ping {
+  margin-left: 75px;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+.detail-container {
+  display: flex;
+  margin: 1.5%;
+}
+
+.left {
+  width: 31%;
+}
+
+.right {
+  width: 69%;
+}
+
+.session-name {
+  color: black;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.device-id {
+  color: #ff00ff;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.session-time-container {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.session-time {
+  color: black;
   font-size: 1em;
+}
+
+.session-time2 {
+  color: black;
+  font-size: 1em;
+  margin-left: 58px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.save-button {
+  background: linear-gradient(225deg, transparent 15px, #00ccff 15px);
+  width: 250px;
+  height: 50px;
+  font-size: 1em;
+  color: white;
+  font-weight: bold;
+  border: none;
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.save-button:hover {
+  background: linear-gradient(225deg, transparent 15px, #ff00ff 15px);
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.back-button {
+  background: linear-gradient(225deg, transparent 15px, #00ccff 15px);
+  width: 250px;
+  height: 50px;
+  font-size: 1em;
+  color: white;
+  font-weight: bold;
+  border: none;
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+  margin-left: 43px;
+}
+
+.back-button:hover {
+  background: linear-gradient(225deg, transparent 15px, #ff00ff 15px);
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.map {
+  margin-top: 20px;
+  border: 1px solid #c9c9c9;
+  width: 541px;
+  height: 680px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container-title {
+  color: black;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.control-panel {
+  border: 1px solid #c9c9c9;
+  padding: 20px;
+  height: 168px;
+  width: 1230px;
+}
+
+.command-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.command {
+  margin: 20px 20px 0px 0px;
+}
+
+.command-button {
+  background: linear-gradient(225deg, transparent 15px, #9016c1 15px);
+  width: 250px;
+  height: 50px;
+  font-size: 1em;
+  color: white;
+  font-weight: bold;
+  border: none;
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.command-button:hover {
+  background: linear-gradient(225deg, transparent 15px, #ff00ff 15px);
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.command-input {
+  width: 270px;
+  height: 46px;
+  font-size: 1em;
+  border: 1px solid #c9c9c9;
+}
+
+.session-data {
+  border: 1px solid #c9c9c9;
+  padding: 20px;
+  margin-top: 20px;
+  width: 1230px;
+  height: 580px;
+}
+
+.session-data-item {
+  display: flex;
+  margin-top: 20px;
+}
+
+.key-value-header {
+  display: flex;
+  text-wrap-mode: nowrap;
+}
+
+.key-value-header-name {
+  margin: 0;
+  margin-right: 10px;
+  color: #ff00ff;
+}
+
+.key-value-header-value {
+  margin-right: 10px;
+}
+
+.values-container {
+  max-height: 100px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #e9e9e9;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  width: 100%;
+}
+
+.values-container::-webkit-scrollbar {
+  display: none;
+}
+
+.value-item {
+  padding: 2px 0;
 }

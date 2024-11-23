@@ -18,6 +18,15 @@
               "eventName": "changeColor",
               "parameters": {}
             }
+          },
+          {
+            "title": "Send with Input",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "sendInput",
+              "parameters": {}
+            }
           }
         ],
         "receivers": [
@@ -27,6 +36,23 @@
             },
             "randomNumber":{
               "maxHistory": 10
+            },
+            "position":{
+              "maxHistory": 10
+            }
+          }
+        ],
+        "levels": [
+          {
+            "1": {
+              "url": "https://fastly.picsum.photos/id/627/200/300.jpg?hmac=C6cEU431ILuZjftVFQ1RsBlFYS52ym9f2KZPSOfH-R4",
+              "realWidth": 20,
+              "realHeight": 30
+            },
+            "2": {
+              "url": "https://fastly.picsum.photos/id/38/1280/960.jpg?hmac=HBrgyJHQOGVicaWoXgvdSfTakkAyv4BxAt4rF0DhWkU",
+              "realWidth": 40,
+              "realHeight": 20
             }
           }
         ]
@@ -50,7 +76,9 @@
         ]
       }
     },
-    "urlServer": "http://13.60.19.254:4000",
+    "urlServer": "http://localhost:4000",
     "urlServer_local": "http://localhost:4000",
-    "urlServer_aws": "http://13.60.19.254:4000"
+    "urlServer_aws": "http://13.60.19.254:4000",
+    "urlServer_cyberspace": "http://100.71.213.45:4000",
+    "min_free_memory_percentage": 20
   }

@@ -4,6 +4,8 @@ from flask import Flask, request
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from time import time
+import psutil
+import gc
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -52,6 +54,8 @@ def handle_register_vue():
 
 @socketio.on('register')
 def handle_register(data):
+    cleanup_inactive_sessions()
+    
     data = json.loads(data)
     device_id = data.get('device_id')
     session_name = data.get('session_name')
@@ -94,6 +98,8 @@ def handle_send_command(data):
 @socketio.on('update_data')
 def handle_update_data(data):
     app.logger.info(f"Data recieved: {data}")
+    cleanup_inactive_sessions()
+    
     try:
         data = json.loads(data)
         device_id = data.get('device_id')
@@ -147,7 +153,7 @@ def handle_get_active_session(data):
     
     if device_id in sessions and sessions[device_id].get('is_connected'):
         emit('active_session', {'device_id': device_id, 'session': sessions[device_id]}, room=vue_session_id)
-        app.logger.info(f"Active session emitted: {sessions[device_id]}")
+        app.logger.info(f"Active session emitted: {device_id}")
 
 @socketio.on('get_inactive_session')
 def handle_get_inactive_session(data):
@@ -160,7 +166,20 @@ def handle_get_inactive_session(data):
     
     if device_id in sessions and not sessions[device_id].get('is_connected'):
         emit('inactive_session', {'device_id': device_id, 'session': sessions[device_id]}, room=vue_session_id)
-        app.logger.info(f"Inactive session emitted: {sessions[device_id]}")
+        app.logger.info(f"Inactive session emitted: {device_id}")
+
+@socketio.on('delete_session')
+def handle_delete_session(data):
+    device_id = data.get('device_id')
+
+    if not device_id:
+        emit('error', {'message': 'device_id is required to delete session'})
+        return
+
+    session = sessions.pop(device_id, None)
+    if session:
+        app.logger.info(f"Deleted session for device ID: {device_id}")
+        emit_sessions_update()
 
 def emit_session_data_key_update(data):
     device_id = data.get('device_id')
@@ -183,6 +202,33 @@ def get_active_sessions():
 
 def get_inactive_sessions():
     return {device_id: session for device_id, session in sessions.items() if not session.get('is_connected')}
+
+def get_available_memory_percentage():
+    memory_info = psutil.virtual_memory()
+    available_percentage = 100 - memory_info.percent 
+    app.logger.info(f"Memory available: {available_percentage}%")
+    return available_percentage
+
+def cleanup_inactive_sessions():
+    available_percentage = get_available_memory_percentage()
+    min_free_memory_percentage = config.get('min_free_memory_percentage', 30)
+
+    if available_percentage < min_free_memory_percentage:
+        app.logger.info(f"Low memory detected: {available_percentage}% available. Cleaning up sessions...")
+
+        inactive_sessions = sorted(
+            ((device_id, session) for device_id, session in sessions.items() if not session['is_connected']),
+            key=lambda item: item[1].get('last_ping', 0)
+        )
+
+        for device_id, session in inactive_sessions:
+            sessions.pop(device_id, None)
+            app.logger.info(f"Removed inactive session for device ID: {device_id}")
+
+            gc.collect()
+            available_percentage = get_available_memory_percentage()
+            if available_percentage >= min_free_memory_percentage:
+                break
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=4000, debug=True)
