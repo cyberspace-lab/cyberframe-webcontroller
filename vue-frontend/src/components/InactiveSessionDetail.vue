@@ -28,8 +28,11 @@
     :mapUrl="currentMapUrl"
     :realWidth="realMapWidth" 
     :realHeight="realMapHeight"
-    :maxWidth="600"
-    :maxHeight="800"
+    :maxWidth="540"
+    :maxHeight="680"
+    :offsetX="mapOffsetX"
+    :offsetY="mapOffsetY"
+    :offsetRot="mapOffsetRotation"
   />
   </div>
 
@@ -124,6 +127,24 @@
           this.application.receivers && 
           this.application.receivers.some(receiver => receiver.position)
         );
+      },
+      mapOffsetX() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].mapOffsetX : null;
+      },
+      mapOffsetY() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].mapOffsetY : null;
+      },
+      mapOffsetRotation() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].mapOffsetRotation : null;
       }
     },
     methods: {

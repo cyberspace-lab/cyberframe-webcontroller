@@ -32,6 +32,18 @@
       maxHeight: {
         type: Number,
         default: 500
+      },
+      offsetX: {
+        type: Number,
+        default: 0
+      },
+      offsetY: {
+        type: Number,
+        default: 0
+      },
+      offsetRot: {
+        type: Number,
+        default: 0
       }
     },
     data() {
@@ -113,12 +125,12 @@
           for (let i = 1; i < playerPositions.length; i++) {
             const position = playerPositions[i];
             const prevPosition = playerPositions[i - 1];
-  
-            const x = mapCentreX + (position.posX * this.scaleX);
-            const y = mapCentreY + (-position.posZ * this.scaleY); // Flip the Y axis if needed
 
-            const prevX = mapCentreX + (prevPosition.posX * this.scaleX);
-            const prevY = mapCentreY + (-prevPosition.posZ * this.scaleY); // Flip the Y axis if needed
+            const x = mapCentreX + ((position.posX + this.offsetX) * this.scaleX);
+            const y = mapCentreY + ((-position.posZ + this.offsetY) * this.scaleY); // Flip the Y axis if needed
+
+            const prevX = mapCentreX + ((prevPosition.posX + this.offsetX) * this.scaleX);
+            const prevY = mapCentreY + ((-prevPosition.posZ + this.offsetY) * this.scaleY); // Flip the Y axis if needed
   
             // Adjust the line width based on the age of the position
             const lineWidth = Math.max(1, 5 - i * 0.4); // Line width decreases with age (limit to 1px)
@@ -139,17 +151,19 @@
             // Skip if the current position is the same as the next one (same posX, posY, rotY)
             if (i > 0) {
               const nextPosition = playerPositions[i - 1];
+
               if (
                 position.posX === nextPosition.posX &&
                 position.posZ === nextPosition.posZ &&
                 position.rotY === nextPosition.rotY
-              ) {
+                )
+              {
                 continue; // Skip drawing this position if it's the same as the next one
               }
             }
   
-            const x = mapCentreX + (position.posX * this.scaleX);
-            const y = mapCentreY + (-position.posZ * this.scaleY); // Flip the Y axis if needed
+            const x = mapCentreX + ((position.posX + this.offsetX) * this.scaleX);
+            const y = mapCentreY + ((-position.posZ + this.offsetY) * this.scaleY); // Flip the Y axis if needed
   
             // Calculate the dot and arrow size based on the position index (older positions are smaller)
             const dotSize = Math.max(2, 5 - i * 0.2); // Dot size decreases with age (limit to 2px)
@@ -178,10 +192,10 @@
         const mapCentreX = canvas.width / 2;
         const mapCentreY = canvas.height / 2;
   
-        const x = mapCentreX + (posX * this.scaleX);
-        const y = mapCentreY + (-posY * this.scaleY);
+        const x = mapCentreX + ((posX + this.offsetX) * this.scaleX);
+        const y = mapCentreY + ((-posY + this.offsetY) * this.scaleY);
   
-        const angle = rot * (Math.PI / 180); // Convert degrees to radians
+        const angle = (rot + this.offsetRot) * (Math.PI / 180); // Convert degrees to radians
   
         const endX = x + arrowLength * Math.cos(angle);
         const endY = y + arrowLength * Math.sin(angle);

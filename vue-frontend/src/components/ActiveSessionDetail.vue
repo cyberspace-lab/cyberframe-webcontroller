@@ -24,12 +24,15 @@
       <div class="map">
       <LatestPositions
         v-if="shouldRenderLatestPositions"
-        :positions="parsedPositions"
+        :positions="filteredPositionsByLevelID"
         :mapUrl="currentMapUrl"
         :realWidth="realMapWidth" 
         :realHeight="realMapHeight"
-        :maxWidth="600"
-        :maxHeight="800"
+        :maxWidth="540"
+        :maxHeight="680"
+        :offsetX="mapOffsetX"
+        :offsetY="mapOffsetY"
+        :offsetRot="mapOffsetRotation"
       />
       </div>
 
@@ -107,6 +110,23 @@
       parsedPositions() {
         return this.sessionData.position.map(position => JSON.parse(position));
       },
+      filteredPositionsByLevelID() {
+        for (let i = 0; i < this.parsedPositions.length; i++) {
+          const innerArray = this.parsedPositions[i];
+
+          // Ensure the inner element is an array before proceeding
+          if (Array.isArray(innerArray)) {
+            for (let j = innerArray.length - 1; j >= 0; j--) {
+              const position = innerArray[j];
+              // Remove positions that don't match currentLevelID
+              if (position.levelID !== this.currentLevelID) {
+                innerArray.splice(j, 1); // Remove position at index `j`
+              }
+            }
+          }
+        }
+        return this.parsedPositions;
+      },
       filteredSessionData() {
         return Object.fromEntries(
           Object.entries(this.sessionData).filter(([key]) => key !== 'position')
@@ -141,6 +161,24 @@
           this.application.receivers && 
           this.application.receivers.some(receiver => receiver.position)
         );
+      },
+      mapOffsetX() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].mapOffsetX : null;
+      },
+      mapOffsetY() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].mapOffsetY : null;
+      },
+      mapOffsetRotation() {
+        if (!this.application || !this.application.levels || !this.currentLevelID) return null;
+
+        const levelMap = this.application.levels.find((level) => level[this.currentLevelID]);
+        return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].mapOffsetRotation : null;
       }
     },
     methods: {
