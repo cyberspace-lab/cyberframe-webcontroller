@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/socket.io': {
-        target: 'http://localhost:4000',
+        target: 'http://flask_app:4000',
         ws: true,
         changeOrigin: true
       }
