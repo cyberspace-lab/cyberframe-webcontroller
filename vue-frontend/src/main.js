@@ -2,11 +2,10 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import { io } from 'socket.io-client';
-import config from '@/config.json';
 
 import './assets/main.css';
 
-const socket = io(config.urlServer);
+const socket = io('http://flask_app:4000');
 
 socket.on('connect', () => {
     console.log('Vue connected to server');

@@ -231,4 +231,4 @@ def cleanup_inactive_sessions():
                 break
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=4000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=4000)

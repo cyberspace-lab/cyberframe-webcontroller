@@ -265,9 +265,5 @@
         ]
       }
     },
-    "urlServer": "http://100.71.213.45:4000",
-    "urlServer_local": "http://localhost:4000",
-    "urlServer_aws": "http://13.60.19.254:4000",
-    "urlServer_cyberspace": "http://100.71.213.45:4000",
     "min_free_memory_percentage": 20
   }

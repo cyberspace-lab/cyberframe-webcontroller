@@ -7,6 +7,7 @@ services:
     build: .
     ports:
       - "4000:4000"
+
   vue_frontend:
     container_name: vue_frontend
     image: node:latest

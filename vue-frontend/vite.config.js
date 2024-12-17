@@ -1,7 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import config from './src/config.json';
 
 export default defineConfig({
   plugins: [vue()],
@@ -9,8 +8,9 @@ export default defineConfig({
     host: true,
     proxy: {
       '/socket.io': {
-        target: config.urlServer,
+        target: 'http://flask_app:4000',
         ws: true,
+        changeOrigin: true
       }
     }
   },
