@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 
 import './assets/main.css';
 
-const socket = io('http://flask_app:4000');
+const socket = io('http://localhost:4000');
 
 socket.on('connect', () => {
     console.log('Vue connected to server');
