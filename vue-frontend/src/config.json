@@ -93,7 +93,8 @@
             "payload": {
               "eventName": "participantName",
               "parameters": {}
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start Test Teleport",
@@ -102,7 +103,8 @@
               "parameters": {
                 "settingsIndex": 0
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start Test Dash",
@@ -111,7 +113,8 @@
               "parameters": {
                 "settingsIndex": 1
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start Dungeon Dash",
@@ -120,7 +123,8 @@
               "parameters": {
                 "settingsIndex": 2
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start Dungeon Teleport",
@@ -129,7 +133,8 @@
               "parameters": {
                 "settingsIndex": 3
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start House Dash",
@@ -138,7 +143,8 @@
               "parameters": {
                 "settingsIndex": 4
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start House Teleport",
@@ -147,7 +153,8 @@
               "parameters": {
                 "settingsIndex": 5
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start Green House Dash",
@@ -156,7 +163,8 @@
               "parameters": {
                 "settingsIndex": 6
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start Green House Teleport",
@@ -165,7 +173,8 @@
               "parameters": {
                 "settingsIndex": 7
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start Demo Dash",
@@ -174,7 +183,8 @@
               "parameters": {
                 "settingsIndex": 8
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start Demo Teleport",
@@ -183,21 +193,24 @@
               "parameters": {
                 "settingsIndex": 9
               }
-            }
+            },
+            "context": ["menu"]
           },
           {
             "title": "Start/Stop Experiment",
             "payload": {
               "eventName": "startStopExperiment",
               "parameters": {}
-            }
+            },
+            "context": ["level"]
           },
           {
             "title": "Go to menu",
             "payload": {
               "eventName": "goToMenu",
               "parameters": {}
-            }
+            },
+            "context": ["level"]
           }
         ],
         "receivers": [

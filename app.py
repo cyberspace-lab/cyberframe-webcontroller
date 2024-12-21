@@ -25,6 +25,10 @@ with open('vue-frontend/src/config.json') as config_file:
 def index():
     return "Server is running."
 
+@socketio.on('ping')
+def ping():
+    emit('pong', room=request.sid)
+
 @socketio.on('connect')
 def handle_connect():
     app.logger.info('Client connected: ' + request.sid)
@@ -229,6 +233,10 @@ def cleanup_inactive_sessions():
             available_percentage = get_available_memory_percentage()
             if available_percentage >= min_free_memory_percentage:
                 break
+
+@app.route('/test')
+def test_interface():
+    return app.send_static_file('test_interface.html')
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=4000)

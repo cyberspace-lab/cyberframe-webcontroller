@@ -43,7 +43,7 @@
     <div class="control-panel">
         <h1 class="container-title">{{ application.name }} Control Panel</h1>
         <div class="command-buttons-container">
-          <div class="command" v-for="(button, index) in application.controlButtons" :key="index">
+          <div class="command" v-for="(button, index) in filteredControlButtons" :key="index">
           <template v-if="button.requiresInput">
             <input 
               v-model="dynamicInputs[index]" 
@@ -107,6 +107,44 @@
         }
         return null;
       },
+      filteredControlButtons() {
+        if (!this.application || !this.application.controlButtons) return [];
+        if (!this.currentContext || this.currentContext.length === 0) return this.application.controlButtons;
+
+        return this.application.controlButtons.filter(button => {
+          if (!button.context || button.context.length === 0) return true;
+          
+          const buttonContexts = Array.isArray(button.context) ? button.context : button.context.split(',');
+          const currentContexts = Array.isArray(this.currentContext[0]) ? this.currentContext[0] : this.currentContext[0].split(',');
+
+          let found = false;
+
+          for (let i = 0; i < buttonContexts.length; i++) {
+            const ctx = buttonContexts[i];
+
+            // Loop through the current context and compare each element with the button context
+            for (let j = 0; j < currentContexts.length; j++) {
+              const context = currentContexts[j];
+    
+              if (context == ctx) {
+                found = true;
+                break; // Exit the inner loop once a match is found
+              }
+            }
+
+            if (found) {
+              break; // Exit the outer loop once a match is found
+            }
+          }
+
+          return found;
+        });
+      },
+      currentContext() {
+        if (!this.sessionData.context) return [];
+
+        return this.sessionData.context.map(context => JSON.parse(context));
+      },
       parsedPositions() {
         return this.sessionData.position.map(position => JSON.parse(position));
       },
@@ -129,7 +167,7 @@
       },
       filteredSessionData() {
         return Object.fromEntries(
-          Object.entries(this.sessionData).filter(([key]) => key !== 'position')
+          Object.entries(this.sessionData).filter(([key]) => key !== 'position' && key !== 'context')
         );
       },
       currentLevelID() {

@@ -249,7 +249,7 @@ a:hover {
 .control-panel {
   border: 1px solid #c9c9c9;
   padding: 20px;
-  height: 168px;
+  height: 308px;
   width: 1230px;
   overflow-y: auto;
 }
@@ -293,7 +293,7 @@ a:hover {
   padding: 20px;
   margin-top: 20px;
   width: 1230px;
-  height: 580px;
+  height: 440px;
   overflow-y: auto;
 }
 

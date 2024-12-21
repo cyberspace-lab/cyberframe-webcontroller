@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocketIO Fake Data Test Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.1/dist/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:4000');
+
+        // Register Fake Session
+        function registerFakeSession() {
+            const deviceId = document.getElementById('device_id').value;
+            const sessionName = document.getElementById('session_name').value;
+            
+            if (!deviceId || !sessionName) {
+                alert('Both device ID and session name are required!');
+                return;
+            }
+
+            const data = JSON.stringify({
+                device_id: deviceId,
+                session_name: sessionName
+            });
+            socket.emit('register', data); // Emit the 'register' event to create a session
+            console.log(`Fake session registered with ID: ${deviceId}, Name: ${sessionName}`);
+        }
+
+        // Update Fake Data
+        function updateFakeData() {
+            const deviceId = document.getElementById('update_device_id').value;
+            const key = document.getElementById('key').value;
+            const value = document.getElementById('value').value;
+
+            if (!deviceId || !key || !value) {
+                alert('Device ID, Key, and Value are required!');
+                return;
+            }
+
+            const data = JSON.stringify({
+                device_id: deviceId,
+                key: key,
+                value: value
+            });
+            socket.emit('update_data', data); // Emit the 'update_data' event
+            console.log(`Fake data updated for Device ID: ${deviceId}, Key: ${key}, Value: ${value}`);
+        }
+
+        // Handle server errors
+        socket.on('error', (data) => {
+            console.error('Error:', data);
+        });
+    </script>
+</head>
+<body>
+    <h1>SocketIO Fake Data Test Interface</h1>
+
+    <!-- Register Fake Session -->
+    <h2>Register Fake Session</h2>
+    <label for="device_id">Device ID: </label>
+    <input type="text" id="device_id" placeholder="Enter device ID" />
+    <br />
+    <label for="session_name">Session Name: </label>
+    <input type="text" id="session_name" placeholder="Enter session name" />
+    <br />
+    <button onclick="registerFakeSession()">Register Fake Session</button>
+
+    <hr>
+
+    <!-- Update Fake Data -->
+    <h2>Update Fake Data</h2>
+    <label for="update_device_id">Device ID: </label>
+    <input type="text" id="update_device_id" placeholder="Enter device ID" />
+    <br />
+    <label for="key">Key: </label>
+    <input type="text" id="key" placeholder="Enter data key" />
+    <br />
+    <label for="value">Value: </label>
+    <input type="text" id="value" placeholder="Enter value" />
+    <br />
+    <button onclick="updateFakeData()">Update Fake Data</button>
+
+</body>
+</html>

@@ -95,7 +95,7 @@
       },
       filteredSessionData() {
         return Object.fromEntries(
-          Object.entries(this.sessionData).filter(([key]) => key !== 'position')
+          Object.entries(this.sessionData).filter(([key]) => key !== 'position' && key !== 'context')
         );
       },
       currentLevelID() {
