@@ -218,6 +218,9 @@
             "currentScene":{
               "maxHistory": 10
             },
+            "location":{
+              "maxHistory": 20
+            },
             "position":{
               "maxHistory": 10
             }
