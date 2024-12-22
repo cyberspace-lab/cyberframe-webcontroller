@@ -6,6 +6,12 @@ from flask_cors import CORS
 from time import time
 import psutil
 import gc
+import os
+
+INACTIVE_SESSIONS_DIR = './inactive_sessions'
+
+if not os.path.exists(INACTIVE_SESSIONS_DIR):
+    os.makedirs(INACTIVE_SESSIONS_DIR)
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -24,6 +30,10 @@ with open('vue-frontend/src/config.json') as config_file:
 @app.route('/')
 def index():
     return "Server is running."
+
+@app.route('/test')
+def test_interface():
+    return app.send_static_file('test_interface.html')
 
 @socketio.on('ping')
 def ping():
@@ -44,6 +54,9 @@ def handle_disconnect():
         if session['sid'] == request.sid:
             session['last_ping'] = time()
             session['is_connected'] = False
+
+            save_session_to_disk(device_id, session)
+
             emit('unity_disconnected', {'device_id': device_id}, room=vue_session_id)
             break
 
@@ -68,24 +81,33 @@ def handle_register(data):
         emit('error', {'message': 'device_id is required'})
         return
 
-    sessions[device_id] = {
-        'session_name': session_name,
-        'start_time': time(),
-        'last_ping': time(),
-        'data': {},
-        'sid': request.sid,
-        'is_connected': True
-    }
+    existing_session = load_session_from_disk(device_id)
+    if existing_session:
+        sessions[device_id] = existing_session
+        sessions[device_id].update({
+            'sid': request.sid,
+            'is_connected': True,
+            'last_ping': time()
+        })
+    else:
+        sessions[device_id] = {
+            'session_name': session_name,
+            'start_time': time(),
+            'last_ping': time(),
+            'data': {},
+            'sid': request.sid,
+            'is_connected': True
+        }
 
-    app_config = config.get('applications', {}).get(session_name, {})
-    receivers = app_config.get('receivers', [{}])
+        app_config = config.get('applications', {}).get(session_name, {})
+        receivers = app_config.get('receivers', [{}])
 
-    for receiver in receivers:
-        for key in receiver.keys():
-            sessions[device_id]['data'][key] = []
+        for receiver in receivers:
+            for key in receiver.keys():
+                sessions[device_id]['data'][key] = []
 
     emit('registered', room=request.sid)
-    emit('unity_connected', room=vue_session_id)
+    emit('unity_connected', {'device_id': device_id}, room=vue_session_id)
     emit_sessions_update()
 
 @socketio.on('send_command')
@@ -162,7 +184,6 @@ def handle_get_active_session(data):
 @socketio.on('get_inactive_session')
 def handle_get_inactive_session(data):
     device_id = data.get('device_id')
-    app.logger.info(f"Requested inactive session for device ID: {device_id}")
 
     if not device_id:
         emit('error', {'message': 'device_id is required to fetch session'})
@@ -181,8 +202,18 @@ def handle_delete_session(data):
         return
 
     session = sessions.pop(device_id, None)
+
     if session:
         app.logger.info(f"Deleted session for device ID: {device_id}")
+        
+        file_path = os.path.join(INACTIVE_SESSIONS_DIR, f"{device_id}.json")
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                app.logger.info(f"Deleted session file from disk: {file_path}")
+            except Exception as e:
+                app.logger.error(f"Error deleting session file from disk: {file_path}, Error: {e}")
+        
         emit_sessions_update()
 
 def emit_session_data_key_update(data):
@@ -205,7 +236,21 @@ def get_active_sessions():
     return {device_id: session for device_id, session in sessions.items() if session.get('is_connected')}
 
 def get_inactive_sessions():
-    return {device_id: session for device_id, session in sessions.items() if not session.get('is_connected')}
+    inactive = {device_id: session for device_id, session in sessions.items() if not session.get('is_connected')}
+
+    for file_name in os.listdir(INACTIVE_SESSIONS_DIR):
+        device_id = os.path.splitext(file_name)[0]
+        if device_id not in inactive and device_id not in sessions:
+            file_path = os.path.join(INACTIVE_SESSIONS_DIR, file_name)
+            try:
+                with open(file_path, 'r') as f:
+                    session = json.load(f)
+                inactive[device_id] = session
+                sessions[device_id] = session
+            except Exception as e:
+                app.logger.error(f"Error reading session file {file_name}: {e}")
+
+    return inactive
 
 def get_available_memory_percentage():
     memory_info = psutil.virtual_memory()
@@ -234,9 +279,26 @@ def cleanup_inactive_sessions():
             if available_percentage >= min_free_memory_percentage:
                 break
 
-@app.route('/test')
-def test_interface():
-    return app.send_static_file('test_interface.html')
+def save_session_to_disk(device_id, session):
+    file_path = os.path.join(INACTIVE_SESSIONS_DIR, f"{device_id}.json")
+    try:
+        with open(file_path, 'w') as f:
+            json.dump(session, f, default=str)
+        app.logger.info(f"Saved inactive session to disk: {file_path}")
+    except Exception as e:
+        app.logger.error(f"Error saving session to disk: {e}")
+
+def load_session_from_disk(device_id):
+    file_path = os.path.join(INACTIVE_SESSIONS_DIR, f"{device_id}.json")
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, 'r') as f:
+                session = json.load(f)
+            app.logger.info(f"Loaded session from disk: {file_path}")
+            return session
+        except Exception as e:
+            app.logger.error(f"Error loading session from disk: {e}")
+    return None
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=4000)

@@ -174,7 +174,7 @@
         this.showAllValuesToggle[key] = !this.showAllValuesToggle[key];
       },
 
-      handleUnityConnected() {
+      handleUnityConnected(data) {
         if (this.deviceId != data.device_id) return;
         console.log('Unity app connected from server');
         this.session = null;
