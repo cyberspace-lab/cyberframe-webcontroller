@@ -41,72 +41,23 @@
     },
     methods: {
       goToActiveSessions() {
-       this.$router.push('/activesessions');
+        // Redirect to active sessions page
+        this.$router.push('/activesessions');
       },
       handleInactiveSessionsUpdate(inactiveSessions) {
+        // Update inactive sessions
         this.inactiveSessions = inactiveSessions;
       }
     },
     mounted() {
+      // Get inactive sessions
       this.$socket.emit('get_inactive_sessions');
-
+      // Listen for inactive sessions update
       this.$socket.on('inactive_sessions_update', this.handleInactiveSessionsUpdate);
     },
     beforeUnmount() {
+      // Remove socket listener
       this.$socket.off('inactive_sessions_update', this.handleInactiveSessionsUpdate);
     }
   };
 </script>
-
-<style>
-  .inactive-session-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .inactive-session-item {
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-
-  .inactive-session-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  }
-
-  .inactive-session-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    padding: 15px;
-  }
-
-  .inactive-session-link h5 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-  }
-
-  .inactive-session-link small {
-    color: #666;
-  }
-
-  .view-active-sessions-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .view-active-sessions-btn:hover {
-    background-color: #0056b3;
-  }
-</style>

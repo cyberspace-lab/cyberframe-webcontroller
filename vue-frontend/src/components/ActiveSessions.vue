@@ -41,18 +41,22 @@
     },
     methods: {
       goToInactiveSessions() {
-       this.$router.push('/inactivesessions');
+        // Redirect to the InactiveSessions component
+        this.$router.push('/inactivesessions');
       },
       handleActiveSessionsUpdate(activeSessions) {
+        // Update the activeSessions data when the 'active_sessions_update' event is received
         this.activeSessions = activeSessions;
       },
     },
     mounted() {
+      // Emit the 'get_active_sessions' event to request the active sessions data
       this.$socket.emit('get_active_sessions');
 
       this.$socket.on('active_sessions_update', this.handleActiveSessionsUpdate);
     },
     beforeUnmount() {
+      // Remove the event listener when the component is destroyed
       this.$socket.off('active_sessions_update', this.handleActiveSessionsUpdate);
     }
   };

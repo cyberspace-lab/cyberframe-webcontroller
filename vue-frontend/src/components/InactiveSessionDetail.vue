@@ -1,67 +1,70 @@
 <template>
-<div class="detail-container" v-if="application">
+  <div class="detail-container" v-if="application">
 
-<div class="left">
+    <div class="left">
 
-  <div>
-    <template v-if="session">
-      <p class="session-name">{{ session.session_name }}</p>
-      <p class="device-id">DEVICE ID: {{ deviceId }}</p>
-      <div class="session-time-container">
-        <p class="session-time">Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
-        <p class="session-time2">Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
+      <!-- Display session details if a session exists -->
+      <div>
+        <template v-if="session">
+          <p class="session-name">{{ session.session_name }}</p>
+          <p class="device-id">DEVICE ID: {{ deviceId }}</p>
+          <div class="session-time-container">
+            <p class="session-time">Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
+            <p class="session-time2">Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
+          </div>
+          <div class="button-container">
+            <button class="save-button" @click="saveSessionAsJson">SAVE SESSION AS JSON</button>
+            <button class="back-button" @click="goToInactiveSessions">BACK TO INACTIVE SESSIONS</button>
+          </div>
+        </template>
+        <template v-else>
+          <p>Session with device {{ this.deviceId }} not connected.</p>
+        </template>
       </div>
-      <div class="button-container">
-        <button class="save-button" @click="saveSessionAsJson">SAVE SESSION AS JSON</button>
-        <button class="back-button" @click="goToInactiveSessions">BACK TO INACTIVE SESSIONS</button>
-      </div>
-    </template>
-    <template v-else>
-      <p>Session with device {{ this.deviceId }} not connected.</p>
-    </template>
-  </div>
   
-  <div class="map">
-  <LatestPositions
-    v-if="shouldRenderLatestPositions"
-    :positions="parsedPositions"
-    :mapUrl="currentMapUrl"
-    :realWidth="realMapWidth" 
-    :realHeight="realMapHeight"
-    :maxWidth="540"
-    :maxHeight="680"
-    :offsetX="mapOffsetX"
-    :offsetY="mapOffsetY"
-    :offsetRot="mapOffsetRotation"
-  />
+      <!-- Render map if positions and map data are available -->
+      <div class="map">
+        <LatestPositions
+          v-if="shouldRenderLatestPositions"
+          :positions="parsedPositions"
+          :mapUrl="currentMapUrl"
+          :realWidth="realMapWidth" 
+          :realHeight="realMapHeight"
+          :maxWidth="540"
+          :maxHeight="680"
+          :offsetX="mapOffsetX"
+          :offsetY="mapOffsetY"
+          :offsetRot="mapOffsetRotation"
+        />
+      </div>
+
+    </div>
+
+    <div class="right">
+
+      <button class="delete-button" @click="deleteSession">DELETE SESSION</button>
+
+      <!-- Display session data -->
+      <div class="inactive-session-data">
+        <h1 class="container-title">Session Data</h1>
+        <div v-for="(values, key) in filteredSessionData" :key="key" class="session-data-item">
+          <div class="key-value-header" @click="toggleShowAllValues(key)">
+            <h3 class="key-value-header-name">{{ key }}: </h3>
+            <span class="key-value-header-value">{{ values[0] }}</span>
+          </div>
+          <div v-if="showAllValuesToggle[key]" class="values-container">
+            <div v-for="(value, index) in values.slice(1)" :key="index" class="value-item">{{ value }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-</div>
-
-<div class="right">
-
-  <button class="delete-button" @click="deleteSession">DELETE SESSION</button>
-
-<div class="inactive-session-data">
-  <h1 class="container-title">Session Data</h1>
-  <div v-for="(values, key) in filteredSessionData" :key="key" class="session-data-item">
-    <div class="key-value-header" @click="toggleShowAllValues(key)">
-      <h3 class="key-value-header-name">{{ key }}: </h3>
-      <span class="key-value-header-value">{{ values[0] }}</span>
-    </div>
-    <div v-if="showAllValuesToggle[key]" class="values-container">
-      <div v-for="(value, index) in values.slice(1)" :key="index" class="value-item">{{ value }}</div>
-    </div>
+  <div v-else>
+    <p class="no-sessions-text">No application selected or application not found.</p>
   </div>
-</div>
-
-</div>
-
-</div>
-
-<div v-else>
-  <p class="no-sessions-text">No application selected or application not found.</p>
-</div>
 </template>
 
 <script>
@@ -120,6 +123,7 @@
         return levelMap && levelMap[this.currentLevelID] ? levelMap[this.currentLevelID].realHeight : null;
       },
       shouldRenderLatestPositions() {
+        // Ensure necessary data exists for rendering positions on the map
         return (
           this.application &&
           this.application.levels && 
@@ -149,10 +153,12 @@
     },
     methods: {
       goToInactiveSessions() {
+        // Redirect to inactive sessions page
        this.$router.push('/inactivesessions');
       },
 
       handleInactiveSession(data) {
+        // Handle and update session details when received
         if (this.deviceId != data.device_id) return;
         this.session = data.session;
         this.sessionData = data.session.data;
@@ -171,10 +177,12 @@
       },
 
       toggleShowAllValues(key) {
+        // Toggle visibility of additional session data values
         this.showAllValuesToggle[key] = !this.showAllValuesToggle[key];
       },
 
       handleUnityConnected(data) {
+        // Redirect to active session detail page if Unity app connects
         if (this.deviceId != data.device_id) return;
         console.log('Unity app connected from server');
         this.session = null;
@@ -184,10 +192,12 @@
       },
 
       emitGetInactiveSession() {
+        // Emit event to fetch inactive session data
         this.$socket.emit('get_inactive_session', { device_id: this.deviceId });
       },
 
       deleteSession() {
+        // Emit delete session event with confirmation
         if (confirm("Are you sure you want to delete this session?")) {
           this.$socket.emit('delete_session', { device_id: this.deviceId });
           this.$router.push({ name: 'inactivesessions' });
@@ -195,6 +205,7 @@
       },
 
       saveSessionAsJson() {
+        // Save session data to a JSON file
         if (this.session) {
           const formattedSession = {
             ...this.session,
@@ -220,6 +231,7 @@
       }
     },
     mounted() {
+      // Emit event to fetch inactive session data after component mounts
       if (this.$socket.connected) {
         this.emitGetInactiveSession();
       } else {
@@ -230,6 +242,7 @@
       this.$socket.on('unity_connected', this.handleUnityConnected);
     },
     beforeUnmount() {
+      // Clean up event listeners before component unmounts
       this.$socket.off('inactive_session', this.handleInactiveSession);
       this.$socket.off('unity_connected', this.handleUnityConnected);
       this.$socket.off('connect', this.emitGetInactiveSession);
