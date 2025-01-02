@@ -12,14 +12,10 @@
 
 1. [Introduction](#introduction)
 2. [File Structure](#file-structure)
-3. [Detailed Explanation](#detailed-explanation)
-   - [Including Socket.IO Client Library](#including-socketio-client-library)
-   - [Establishing Connection](#establishing-connection)
-   - [Registering a Fake Session](#registering-a-fake-session)
-   - [Updating Fake Data](#updating-fake-data)
-   - [Error Handling](#error-handling)
-4. [Usage Instructions](#usage-instructions)
-5. [Integration with Backend](#integration-with-backend)
+3. [Registering a Fake Session](#registering-a-fake-session)
+4. [Updating Fake Data](#updating-fake-data)
+5. [Usage Instructions](#usage-instructions)
+6. [Integration with Backend](#integration-with-backend)
 
 ---
 
