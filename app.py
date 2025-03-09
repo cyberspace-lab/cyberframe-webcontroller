@@ -11,6 +11,8 @@ import os
 # Constants
 INACTIVE_SESSIONS_DIR = './inactive_sessions'
 
+password = os.getenv("PASSWORD", "0000")
+
 # Create the inactive sessions directory if it doesn't exist
 if not os.path.exists(INACTIVE_SESSIONS_DIR):
     os.makedirs(INACTIVE_SESSIONS_DIR)
@@ -42,6 +44,56 @@ def index():
 @app.route('/test')
 def test_interface():
     return app.send_static_file('test_interface.html')
+
+# Save the configuration file
+@socketio.on('save_config')
+def save_config(data):
+    app.logger.info("Saving config")
+
+    user_password = data["password"]
+    config_content = data["config_content"]
+
+     # Check if there are any active sessions
+    active_sessions = get_active_sessions()
+    if active_sessions:
+        app.logger.info("Active sessions found, config not saved.")
+        emit('error', {'message': 'Cannot save config due to active sessions.'}, room=request.sid)
+        return
+
+    if user_password == password:
+        try:
+            with open('/vue-frontend/src/config.json', 'w') as config_file:
+                config_file.write(config_content)
+
+            app.logger.info("Config saved successfully")
+            emit('config_saved', room=request.sid)
+        except Exception as e:
+            app.logger.error(f"Error saving config: {e}")
+            emit('error', {'message': 'Error saving config'}, room=request.sid)
+    else:
+        emit('error', {'message': 'Incorrect password'}, room=request.sid)
+
+# Load the configuration file
+@socketio.on('load_config')
+def load_config(data):
+    app.logger.info("Attempting to load config")
+
+    user_password = data["password"]
+
+    if user_password == password:
+        try:
+            with open('/vue-frontend/src/config.json', 'r') as config_file:
+                config_content = config_file.read()
+
+            # Send the config content back to the client
+            emit('config_loaded', {'config_content': config_content}, room=request.sid)
+            app.logger.info("Config loaded successfully")
+
+        except Exception as e:
+            app.logger.error(f"Error loading config: {e}")
+            emit('error', {'message': 'Error loading config'}, room=request.sid)
+    else:
+        emit('error', {'message': 'Incorrect password'}, room=request.sid)
 
 # Handle the ping event
 @socketio.on('ping')

@@ -7,6 +7,10 @@ services:
     build: .
     ports:
       - "4000:4000"
+    environment:
+      - PASSWORD=aloha123
+    volumes:
+      - ./vue-frontend/src:/vue-frontend/src
 
   vue_frontend:
     container_name: vue_frontend

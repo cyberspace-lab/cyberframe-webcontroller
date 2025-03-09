@@ -3,6 +3,12 @@
     <div class="banner">
       <h1>Active Sessions</h1>
       <button class="banner-button" @click="goToInactiveSessions">VIEW INACTIVE SESSIONS</button>
+      <img 
+        src="@/assets/settings.png" 
+        alt="Settings" 
+        class="settings" 
+        @click="goToSettings"
+      />
     </div>
     <div v-if="activeSessions && Object.keys(activeSessions).length > 0">
       <ul class="session-list">
@@ -43,6 +49,10 @@
       goToInactiveSessions() {
         // Redirect to the InactiveSessions component
         this.$router.push('/inactivesessions');
+      },
+      goToSettings() {
+        // Redirect to settings page
+        this.$router.push('/configedit');
       },
       handleActiveSessionsUpdate(activeSessions) {
         // Update the activeSessions data when the 'active_sessions_update' event is received

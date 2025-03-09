@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ActiveSessions from '@/components/ActiveSessions.vue'
 import ActiveSessionDetail from '@/components/ActiveSessionDetail.vue'
-import InactiveSessions from '@/components/InactiveSessions.vue';
-import InactiveSessionDetail from '@/components/InactiveSessionDetail.vue';
+import InactiveSessions from '@/components/InactiveSessions.vue'
+import InactiveSessionDetail from '@/components/InactiveSessionDetail.vue'
+import ConfigEdit from '@/components/ConfigEdit.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,6 +29,11 @@ const router = createRouter({
       name: 'inactivesessiondetail',
       component: InactiveSessionDetail,
       props: true
+    },
+    {
+      path: '/configedit',
+      name: 'configedit',
+      component: ConfigEdit
     }
   ]
 })

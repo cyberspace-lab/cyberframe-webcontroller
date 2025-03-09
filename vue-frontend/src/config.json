@@ -1,285 +1,338 @@
 {
-  "applications": {
-    "Diplomovka": {
-      "controlButtons": [
-        {
-          "title": "Send some data",
-          "payload": {
-            "eventName": "sendSomeData",
-            "parameters": {
-              "duration": 5,
-              "message": "number five"
+    "applications": {
+      "Diplomovka": {
+        "controlButtons": [
+          {
+            "title": "Send some data",
+            "payload": {
+              "eventName": "sendSomeData",
+              "parameters": {
+                "duration": 5,
+                "message": "number five"
+              }
+            }
+          },
+          {
+            "title": "Change color",
+            "payload": {
+              "eventName": "changeColor",
+              "parameters": {}
+            }
+          },
+          {
+            "title": "Send with Input",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "sendInput",
+              "parameters": {}
+            }
+          },
+          {
+            "title": "Send with Input 2",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "sendInput2",
+              "parameters": {}
+            }
+          },
+          {
+            "title": "Send with Input 3",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "sendInput3",
+              "parameters": {}
+            }
+          },
+          {
+            "title": "Send with Input 4",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "sendInput4",
+              "parameters": {}
             }
           }
-        },
-        {
-          "title": "Change color",
-          "payload": {
-            "eventName": "changeColor",
-            "parameters": {}
+        ],
+        "receivers": [
+          {
+            "currentColor":{
+              "maxHistory": 5
+            },
+            "randomNumber":{
+              "maxHistory": 10
+            },
+            "position":{
+              "maxHistory": 10
+            }
           }
-        },
-        {
-          "title": "Send with Input",
-          "requiresInput": true,
-          "inputPlaceholder": "Type here",
-          "payload": {
-            "eventName": "sendInput",
-            "parameters": {}
+        ],
+        "levels": [
+          {
+            "1": {
+              "url": "https://fastly.picsum.photos/id/627/200/300.jpg?hmac=C6cEU431ILuZjftVFQ1RsBlFYS52ym9f2KZPSOfH-R4",
+              "realWidth": 20,
+              "realHeight": 30
+            },
+            "2": {
+              "url": "https://fastly.picsum.photos/id/38/1280/960.jpg?hmac=HBrgyJHQOGVicaWoXgvdSfTakkAyv4BxAt4rF0DhWkU",
+              "realWidth": 40,
+              "realHeight": 20
+            }
           }
-        },
-        {
-          "title": "Send with Input 2",
-          "requiresInput": true,
-          "inputPlaceholder": "Type here",
-          "payload": {
-            "eventName": "sendInput2",
-            "parameters": {}
-          }
-        },
-        {
-          "title": "Send with Input 3",
-          "requiresInput": true,
-          "inputPlaceholder": "Type here",
-          "payload": {
-            "eventName": "sendInput3",
-            "parameters": {}
-          }
-        },
-        {
-          "title": "Send with Input 4",
-          "requiresInput": true,
-          "inputPlaceholder": "Type here",
-          "payload": {
-            "eventName": "sendInput4",
-            "parameters": {}
-          }
-        }
-      ],
-      "receivers": [
-        {
-          "currentColor":{
-            "maxHistory": 5
+        ]
+      },
+      "MoveDifferent": {
+        "controlButtons": [
+          {
+            "title": "Set participant name",
+            "requiresInput": true,
+            "inputPlaceholder": "Participant",
+            "payload": {
+              "eventName": "participantName",
+              "parameters": {}
+            },
+            "context": ["menu"]
           },
-          "randomNumber":{
-            "maxHistory": 10
+          {
+            "title": "Start Test Teleport",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 0
+              }
+            },
+            "context": ["menu"]
           },
-          "position":{
-            "maxHistory": 10
-          }
-        }
-      ],
-      "levels": [
-        {
-          "1": {
-            "url": "https://fastly.picsum.photos/id/627/200/300.jpg?hmac=C6cEU431ILuZjftVFQ1RsBlFYS52ym9f2KZPSOfH-R4",
-            "realWidth": 20,
-            "realHeight": 30
+          {
+            "title": "Start Test Dash",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 1
+              }
+            },
+            "context": ["menu"]
           },
-          "2": {
-            "url": "https://fastly.picsum.photos/id/38/1280/960.jpg?hmac=HBrgyJHQOGVicaWoXgvdSfTakkAyv4BxAt4rF0DhWkU",
-            "realWidth": 40,
-            "realHeight": 20
+          {
+            "title": "Start Dungeon Dash",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 2
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start Dungeon Teleport",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 3
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start House Dash",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 4
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start House Teleport",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 5
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start Green House Dash",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 6
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start Green House Teleport",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 7
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start Demo Dash",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 8
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start Demo Teleport",
+            "payload": {
+              "eventName": "startLevel",
+              "parameters": {
+                "settingsIndex": 9
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start/Stop Experiment",
+            "payload": {
+              "eventName": "startStopExperiment",
+              "parameters": {}
+            },
+            "context": ["level"]
+          },
+          {
+            "title": "Go to menu",
+            "payload": {
+              "eventName": "goToMenu",
+              "parameters": {}
+            },
+            "context": ["level"]
           }
-        }
-      ]
+        ],
+        "receivers": [
+          {
+            "currentScene":{
+              "maxHistory": 10
+            },
+            "location":{
+              "maxHistory": 20
+            },
+            "position":{
+              "maxHistory": 10
+            }
+          }
+        ],
+        "levels": [
+          {
+            "1": {
+              "url": "https://i.ibb.co/PCLSBCJ/map-dungeon.png",
+              "realWidth": 25.5,
+              "realHeight": 26.5,
+              "mapOffsetX": -0.7,
+              "mapOffsetY": 3.3,
+              "mapOffsetRotation": -90
+            },
+            "2": {
+              "url": "https://i.ibb.co/vmz2Np7/map-test.png",
+              "realWidth": 40,
+              "realHeight": 40,
+              "mapOffsetX": -2.05,
+              "mapOffsetY": 8,
+              "mapOffsetRotation": -90
+            },
+            "3": {
+              "url": "https://i.ibb.co/Twb1K3g/map-demo-apartment-1.png",
+              "realWidth": 10,
+              "realHeight": 12.5,
+              "mapOffsetX": 1.3,
+              "mapOffsetY": 4.5,
+              "mapOffsetRotation": -90
+            },
+            "4": {
+              "url": "https://i.ibb.co/PcJ09dJ/map-demo-apartment-2.png",
+              "realWidth": 10,
+              "realHeight": 12.5,
+              "mapOffsetX": 1.3,
+              "mapOffsetY": 4.5,
+              "mapOffsetRotation": -90
+            },
+            "5": {
+              "url": "https://i.ibb.co/4SnKL9P/map-apartment-house.png",
+              "realWidth": 18,
+              "realHeight": 14.5,
+              "mapOffsetX": -0.95,
+              "mapOffsetY": -0.2,
+              "mapOffsetRotation": -90
+            }
+            ,
+            "6": {
+              "url": "https://i.ibb.co/nMPPJV0/map-green-house.png",
+              "realWidth": 18.5,
+              "realHeight": 17.5,
+              "mapOffsetX": 1.8,
+              "mapOffsetY": -1.85,
+              "mapOffsetRotation": -90
+            }
+          }
+        ]
+      },
+      "DEMO": {
+        "controlButtons": [
+          {
+            "title": "Reset players position",
+            "payload": {
+              "eventName": "resetPosition",
+              "parameters": {}
+            }
+          },
+          {
+            "title": "Reset coins count",
+            "payload": {
+              "eventName": "resetCoins",
+              "parameters": {
+                "count": 0
+              }
+            },
+            "context": ["coins"]
+          },
+          {
+            "title": "Spawn coins",
+            "requiresInput": true,
+            "inputPlaceholder": "Type here",
+            "payload": {
+              "eventName": "spawnCoins",
+              "parameters": {}
+            }
+          }
+        ],
+        "receivers": [
+          {
+            "coinsCollected":{
+              "maxHistory": 10
+            },
+            "event":{
+              "maxHistory": 5
+            },
+            "position":{
+              "maxHistory": 15
+            }
+          }
+        ],
+        "levels": [
+          {
+            "1": {
+              "url": "https://i.ibb.co/tPmk4cYY/DEMOmap.png",
+              "realWidth": 30,
+              "realHeight": 30,
+              "mapOffsetRotation": -90
+            }
+          }
+        ]
+      }
     },
-    "MoveDifferent": {
-      "controlButtons": [
-        {
-          "title": "Set participant name",
-          "requiresInput": true,
-          "inputPlaceholder": "Participant",
-          "payload": {
-            "eventName": "participantName",
-            "parameters": {}
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start Test Teleport",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 0
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start Test Dash",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 1
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start Dungeon Dash",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 2
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start Dungeon Teleport",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 3
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start House Dash",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 4
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start House Teleport",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 5
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start Green House Dash",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 6
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start Green House Teleport",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 7
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start Demo Dash",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 8
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start Demo Teleport",
-          "payload": {
-            "eventName": "startLevel",
-            "parameters": {
-              "settingsIndex": 9
-            }
-          },
-          "context": ["menu"]
-        },
-        {
-          "title": "Start/Stop Experiment",
-          "payload": {
-            "eventName": "startStopExperiment",
-            "parameters": {}
-          },
-          "context": ["level"]
-        },
-        {
-          "title": "Go to menu",
-          "payload": {
-            "eventName": "goToMenu",
-            "parameters": {}
-          },
-          "context": ["level"]
-        }
-      ],
-      "receivers": [
-        {
-          "currentScene":{
-            "maxHistory": 10
-          },
-          "location":{
-            "maxHistory": 20
-          },
-          "position":{
-            "maxHistory": 10
-          }
-        }
-      ],
-      "levels": [
-        {
-          "1": {
-            "url": "https://i.ibb.co/PCLSBCJ/map-dungeon.png",
-            "realWidth": 25.5,
-            "realHeight": 26.5,
-            "mapOffsetX": -0.7,
-            "mapOffsetY": 3.3,
-            "mapOffsetRotation": -90
-          },
-          "2": {
-            "url": "https://i.ibb.co/vmz2Np7/map-test.png",
-            "realWidth": 40,
-            "realHeight": 40,
-            "mapOffsetX": -2.05,
-            "mapOffsetY": 8,
-            "mapOffsetRotation": -90
-          },
-          "3": {
-            "url": "https://i.ibb.co/Twb1K3g/map-demo-apartment-1.png",
-            "realWidth": 10,
-            "realHeight": 12.5,
-            "mapOffsetX": 1.3,
-            "mapOffsetY": 4.5,
-            "mapOffsetRotation": -90
-          },
-          "4": {
-            "url": "https://i.ibb.co/PcJ09dJ/map-demo-apartment-2.png",
-            "realWidth": 10,
-            "realHeight": 12.5,
-            "mapOffsetX": 1.3,
-            "mapOffsetY": 4.5,
-            "mapOffsetRotation": -90
-          },
-          "5": {
-            "url": "https://i.ibb.co/4SnKL9P/map-apartment-house.png",
-            "realWidth": 18,
-            "realHeight": 14.5,
-            "mapOffsetX": -0.95,
-            "mapOffsetY": -0.2,
-            "mapOffsetRotation": -90
-          }
-          ,
-          "6": {
-            "url": "https://i.ibb.co/nMPPJV0/map-green-house.png",
-            "realWidth": 18.5,
-            "realHeight": 17.5,
-            "mapOffsetX": 1.8,
-            "mapOffsetY": -1.85,
-            "mapOffsetRotation": -90
-          }
-        }
-      ]
-    }
-  },
-  "min_free_memory_percentage": 20
-}
+    "min_free_memory_percentage": 20
+  }
