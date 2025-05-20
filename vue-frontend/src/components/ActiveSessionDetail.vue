@@ -24,18 +24,18 @@
       
       <!-- Map display component -->
       <div class="map">
-      <LatestPositions
-        v-if="shouldRenderLatestPositions"
-        :positions="filteredPositionsByLevelID"
-        :mapUrl="currentMapUrl"
-        :realWidth="realMapWidth" 
-        :realHeight="realMapHeight"
-        :maxWidth="540"
-        :maxHeight="680"
-        :offsetX="mapOffsetX"
-        :offsetY="mapOffsetY"
-        :offsetRot="mapOffsetRotation"
-      />
+        <LatestPositions
+          v-if="shouldRenderLatestPositions"
+          :positions="filteredPositionsByLevelID"
+          :mapUrl="currentMapUrl"
+          :realWidth="realMapWidth" 
+          :realHeight="realMapHeight"
+          :maxWidth="540"
+          :maxHeight="680"
+          :offsetX="mapOffsetX"
+          :offsetY="mapOffsetY"
+          :offsetRot="mapOffsetRotation"
+        />
       </div>
 
     </div>
@@ -91,7 +91,7 @@
 
   export default {
     name: 'activesessiondetail',
-    props: ['deviceId'],
+    props: ['deviceId', 'sessionName'],
     components: {
       LatestPositions,
     },
@@ -263,7 +263,7 @@
         this.session = null;
         this.sessionData = {};
         this.showAllValuesToggle = {};
-        this.$router.push('/inactivesessiondetail/' + this.deviceId);
+        this.$router.push('/inactivesessiondetail/' + this.deviceId + "/" + this.sessionName);
       },
       
       handleSession(data) {
@@ -295,7 +295,7 @@
 
       emitGetActiveSession() {
         // Request the active session details from the server
-        this.$socket.emit('get_active_session', { device_id: this.deviceId });
+        this.$socket.emit('get_active_session', { device_id: this.deviceId, session_name: this.sessionName });
       },
 
       saveSessionAsJson() {

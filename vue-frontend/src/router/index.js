@@ -14,7 +14,7 @@ const router = createRouter({
       component: ActiveSessions
     },
     {
-      path: '/activesessiondetail/:deviceId',
+      path: '/activesessiondetail/:deviceId/:sessionName',
       name: 'activesessiondetail',
       component: ActiveSessionDetail,
       props: true
@@ -25,7 +25,7 @@ const router = createRouter({
       component: InactiveSessions
     },
     {
-      path: '/inactivesessiondetail/:deviceId',
+      path: '/inactivesessiondetail/:deviceId/:sessionName',
       name: 'inactivesessiondetail',
       component: InactiveSessionDetail,
       props: true

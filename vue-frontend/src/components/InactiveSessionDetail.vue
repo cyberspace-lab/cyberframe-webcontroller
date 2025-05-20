@@ -74,7 +74,7 @@
   
   export default {
     name: 'inactivesessiondetail',
-    props: ['deviceId'],
+    props: ['deviceId', 'sessionName'],
     components: {
       LatestPositions,
     },
@@ -184,22 +184,22 @@
       handleUnityConnected(data) {
         // Redirect to active session detail page if Unity app connects
         if (this.deviceId != data.device_id) return;
-        console.log('Unity app connected from server');
+        console.log('Unity app connected to server');
         this.session = null;
         this.sessionData = {};
         this.showAllValuesToggle = {};
-        this.$router.push('/activesessiondetail/' + this.deviceId);
+        this.$router.push('/activesessiondetail/' + this.deviceId + "/" + this.sessionName);
       },
 
       emitGetInactiveSession() {
         // Emit event to fetch inactive session data
-        this.$socket.emit('get_inactive_session', { device_id: this.deviceId });
+        this.$socket.emit('get_inactive_session', { device_id: this.deviceId, session_name: this.sessionName });
       },
 
       deleteSession() {
         // Emit delete session event with confirmation
         if (confirm("Are you sure you want to delete this session?")) {
-          this.$socket.emit('delete_session', { device_id: this.deviceId });
+          this.$socket.emit('delete_session', { device_id: this.deviceId, session_name: this.sessionName });
           this.$router.push({ name: 'inactivesessions' });
         }
       },

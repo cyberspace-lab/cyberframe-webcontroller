@@ -10,23 +10,24 @@
         @click="goToSettings"
       />
     </div>
-    <div v-if="inactiveSessions && Object.keys(inactiveSessions).length > 0">
+    <div v-if="parsedSessions.length > 0">
       <ul class="session-list">
         <li 
-          v-for="(session, deviceId) in inactiveSessions" 
-          :key="deviceId" 
+          v-for="session in parsedSessions" 
+          :key="session.deviceId + '_' + session.sessionName"
           class="session-item"
         >
-          <router-link :to="{ name: 'inactivesessiondetail', params: { deviceId: deviceId } }" class="session-link">
+          <router-link :to="{ name: 'inactivesessiondetail', params: { deviceId: session.deviceId, sessionName: session.sessionName } }" class="session-link">
             <div class="session-link-title">
-              <h5>{{ session.session_name }}</h5>
-              <small class="session-link-device">DEVICE ID: {{ deviceId }}</small>
+              <h5>{{ session.session.session_name }}</h5>
+              <small class="session-link-device">DEVICE ID: {{ session.deviceId }}</small>
             </div>
             <div class="session-link-time">
-              <small>Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</small>
-              <small class="session-link-last-ping">Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</small>
+              <small>Start Time: {{ new Date(session.session.start_time * 1000).toLocaleString() }}</small>
+              <small class="session-link-last-ping">Last Ping: {{ new Date(session.session.last_ping * 1000).toLocaleString() }}</small>
             </div>
-            <p class="view-detail">VIEW DETAIL →</p>
+            <button class="delete-button-list" @click.stop.prevent="deleteSession(session.deviceId, session.sessionName)">DELETE</button>
+            <p class="view-detail-list">VIEW DETAIL →</p>
           </router-link>
         </li>
       </ul>
@@ -45,6 +46,14 @@
         inactiveSessions: {}
       };
     },
+    computed: {
+      parsedSessions() {
+        return Object.entries(this.inactiveSessions).map(([key, session]) => {
+          let [deviceId, sessionName] = JSON.parse(key);
+          return { deviceId, sessionName, session };
+        });
+      }
+    },
     methods: {
       goToActiveSessions() {
         // Redirect to active sessions page
@@ -57,6 +66,11 @@
       handleInactiveSessionsUpdate(inactiveSessions) {
         // Update inactive sessions
         this.inactiveSessions = inactiveSessions;
+      },
+      deleteSession(deviceId, sessionName) {
+        if (confirm(`Are you sure you want to delete session "${sessionName}" for device "${deviceId}"?`)) {
+          this.$socket.emit('delete_session', { device_id: deviceId, session_name: sessionName });
+        }
       }
     },
     mounted() {

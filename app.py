@@ -26,7 +26,7 @@ CORS(app, origins="*")
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Global variables
-sessions = {}
+sessions = {}  # {(device_id, session_name): session_data}
 vue_sessions = set()
 max_history_cache = {}
 config = None
@@ -114,14 +114,14 @@ def handle_disconnect():
         app.logger.info(f"Vue session removed: {request.sid}")
     else:
         # Find the session with the matching sid and mark it as disconnected
-        for device_id, session in sessions.items():
+        for key, session in sessions.items():
             if session['sid'] == request.sid:
                 session['last_ping'] = time()
                 session['is_connected'] = False
 
-                save_session_to_disk(device_id, session)
+                save_session_to_disk(key[0], key[1], session)
 
-                emit('unity_disconnected', {'device_id': device_id}, broadcast=True)
+                emit('unity_disconnected', {'device_id': key[0], 'session_name': key[1]}, broadcast=True)
                 break
 
     emit_sessions_update()
@@ -144,22 +144,23 @@ def handle_register(data):
     device_id = data.get('device_id')
     session_name = data.get('session_name')
 
-    if not device_id:
-        emit('error', {'message': 'device_id is required'})
+    if not device_id or not session_name:
+        emit('error', {'message': 'device_id and session_name are required'})
         return
 
     # Check if the device ID is already registered
-    existing_session = load_session_from_disk(device_id)
+    key = (device_id, session_name)
+    existing_session = load_session_from_disk(device_id, session_name)
     if existing_session:
-        sessions[device_id] = existing_session
-        sessions[device_id].update({
+        sessions[key] = existing_session
+        sessions[key].update({
             'sid': request.sid,
             'is_connected': True,
             'last_ping': time()
         })
     else:
         # Create a new session
-        sessions[device_id] = {
+        sessions[key] = {
             'session_name': session_name,
             'start_time': time(),
             'last_ping': time(),
@@ -173,11 +174,11 @@ def handle_register(data):
         receivers = app_config.get('receivers', [{}])
 
         for receiver in receivers:
-            for key in receiver.keys():
-                sessions[device_id]['data'][key] = []
+            for k in receiver.keys():
+                sessions[key]['data'][k] = []
 
     emit('registered', room=request.sid)
-    emit('unity_connected', {'device_id': device_id}, broadcast=True)
+    emit('unity_connected', {'device_id': device_id, 'session_name': session_name}, broadcast=True)
     # Emit the updated sessions to all clients
     emit_sessions_update()
 
@@ -203,34 +204,35 @@ def handle_update_data(data):
         # Get the device ID, key, and value from the data
         data = json.loads(data)
         device_id = data.get('device_id')
-        key = data.get('key')
+        session_name = data.get('session_name')
+        key_name = data.get('key')
         value = data.get('value')
 
-        if not device_id or not key or not value:
-            emit('error', 'device_id, key, and value are required', room=request.sid)
+        if not device_id or not session_name or not key_name or not value:
+            emit('error', 'device_id, session_name, key, and value are required', room=request.sid)
             return
 
-        if key not in sessions[device_id]['data']:
-            sessions[device_id]['data'][key] = []
+        key = (device_id, session_name)
+        if key_name not in sessions[key]['data']:
+            sessions[key]['data'][key_name] = []
 
         # Insert the value at the beginning of the list
-        sessions[device_id]['data'][key].insert(0, value)
-        sessions[device_id]['last_ping'] = time()
+        sessions[key]['data'][key_name].insert(0, value)
+        sessions[key]['last_ping'] = time()
 
         # Limit the history size based on the configuration
-        session_name = sessions[device_id]['session_name']
-        max_history_size = max_history_cache.get((session_name, key))
+        max_history_size = max_history_cache.get((session_name, key_name))
         if max_history_size is None:
             app_config = config.get('applications', {}).get(session_name, {})
             receivers = app_config.get('receivers', [{}])
-            max_history_size = receivers[0].get(key, {}).get('maxHistory', 10)
-            max_history_cache[(session_name, key)] = max_history_size
+            max_history_size = receivers[0].get(key_name, {}).get('maxHistory', 10)
+            max_history_cache[(session_name, key_name)] = max_history_size
 
         # Trim the history size
-        if len(sessions[device_id]['data'][key]) > max_history_size:
-            sessions[device_id]['data'][key] = sessions[device_id]['data'][key][:max_history_size]
+        if len(sessions[key]['data'][key_name]) > max_history_size:
+            sessions[key]['data'][key_name] = sessions[key]['data'][key_name][:max_history_size]
 
-        emit_session_data_key_update({'device_id': device_id, 'key': key})
+        emit_session_data_key_update({'device_id': device_id, 'session_name': session_name, 'key': key_name})
 
     except Exception as e:
         emit('error', str(e), room=request.sid)
@@ -252,15 +254,14 @@ def handle_get_inactive_sessions():
 def handle_get_active_session(data):
     # Get the device ID from the data
     device_id = data.get('device_id')
+    session_name = data.get('session_name')
     app.logger.info(f"Requested active session for device ID: {device_id}")
 
-    if not device_id:
-        emit('error', {'message': 'device_id is required to fetch session'})
-        return
+    key = (device_id, session_name)
 
     # Check if the device ID is in the sessions and is connected
-    if device_id in sessions and sessions[device_id].get('is_connected'):
-        emit('active_session', {'device_id': device_id, 'session': sessions[device_id]}, room=request.sid)
+    if key in sessions and sessions[key].get('is_connected'):
+        emit('active_session', {'device_id': device_id, 'session_name': session_name, 'session': sessions[key]}, room=request.sid)
         app.logger.info(f"Active session emitted: {device_id}")
 
 # This event is used to fetch the inactive session for a device ID
@@ -268,51 +269,51 @@ def handle_get_active_session(data):
 def handle_get_inactive_session(data):
     device_id = data.get('device_id')
 
-    if not device_id:
-        emit('error', {'message': 'device_id is required to fetch session'})
-        return
-
+    session_name = data.get('session_name')
+    key = (device_id, session_name)
     # Check if the device ID is in the sessions and is not connected
-    if device_id in sessions and not sessions[device_id].get('is_connected'):
-        emit('inactive_session', {'device_id': device_id, 'session': sessions[device_id]}, room=request.sid)
+    if key in sessions and not sessions[key].get('is_connected'):
+        emit('inactive_session', {'device_id': device_id, 'session_name': session_name, 'session': sessions[key]}, room=request.sid)
         app.logger.info(f"Inactive session emitted: {device_id}")
 
 # This event is used to delete the session for a device ID
 @socketio.on('delete_session')
 def handle_delete_session(data):
     device_id = data.get('device_id')
+    session_name = data.get('session_name')
+    key = (device_id, session_name)
 
-    if not device_id:
-        emit('error', {'message': 'device_id is required to delete session'})
-        return
-
-    session = sessions.pop(device_id, None)
+    session = sessions.pop(key, None)
     
     if session:
         app.logger.info(f"Deleted session for device ID: {device_id}")
+        filename = f"{device_id}_{session_name}.json"
 
-        file_path = os.path.join(INACTIVE_SESSIONS_DIR, f"{device_id}.json")
+        file_path = os.path.join(INACTIVE_SESSIONS_DIR, filename)
         if os.path.exists(file_path):
             try:
                 os.remove(file_path)
                 app.logger.info(f"Deleted session file from disk: {file_path}")
             except Exception as e:
-                app.logger.error(f"Error deleting session file from disk: {file_path}, Error: {e}")
+                app.logger.error(f"Error deleting session file: {e}")
 
         emit_sessions_update()
 
 # This event is used to update the session data key for a device ID
 def emit_session_data_key_update(data):
     device_id = data.get('device_id')
-    key = data.get('key')
+    session_name = data.get('session_name')
+    key_name = data.get('key')
+    key = (device_id, session_name)
 
-    if not device_id:
-        emit('error', {'message': 'device_id is required to fetch session data'})
-        return
-
-    if device_id in sessions:
+    if key in sessions:
         for vue_sid in vue_sessions:
-            emit('session_data_key_update', {'device_id': device_id, 'key': key, 'value': sessions[device_id]['data'][key]}, room=vue_sid)
+            emit('session_data_key_update', {
+                'device_id': device_id,
+                'session_name': session_name,
+                'key': key_name,
+                'value': sessions[key]['data'][key_name]
+            }, room=vue_sid)
 
 # This event is used to emit the updated sessions to all Vue clients
 def emit_sessions_update():
@@ -323,28 +324,53 @@ def emit_sessions_update():
         emit('inactive_sessions_update', inactive_sessions, room=vue_sid)
     app.logger.info(f'Sessions emitted to all Vue clients')
 
+def get_active_sessions_internal():
+    return {(device_id, session['session_name']): session for (device_id, session_name), session in sessions.items() if session.get('is_connected')}
+
 def get_active_sessions():
     # Return the active sessions
-    return {device_id: session for device_id, session in sessions.items() if session.get('is_connected')}
+    active_sessions = get_active_sessions_internal()
+    sessions = {}
+    for (device_id, session_name), session in active_sessions.items():
+        key = json.dumps([device_id, session_name])
+        sessions[key] = session
+    return sessions
 
-def get_inactive_sessions():
-    # Return the inactive sessions
-    inactive = {device_id: session for device_id, session in sessions.items() if not session.get('is_connected')}
+def get_inactive_sessions_internal():
+    inactive = {
+        (device_id, session_name): session
+        for (device_id, session_name), session in sessions.items()
+        if not session.get('is_connected')
+    }
 
     # Load the inactive sessions from disk
     for file_name in os.listdir(INACTIVE_SESSIONS_DIR):
-        device_id = os.path.splitext(file_name)[0]
-        if device_id not in inactive and device_id not in sessions:
+        base_name = os.path.splitext(file_name)[0]
+        parts = base_name.split('_', 1)
+
+        device_id, session_name = parts
+        key = (device_id, session_name)
+        
+        if key not in inactive and key not in sessions:
             file_path = os.path.join(INACTIVE_SESSIONS_DIR, file_name)
             try:
                 with open(file_path, 'r') as f:
                     session = json.load(f)
-                inactive[device_id] = session
-                sessions[device_id] = session
+                inactive[key] = session
+                sessions[key] = session
             except Exception as e:
-                app.logger.error(f"Error reading session file {file_name}: {e}")
+                app.logger.error(f"Error loading session file {file_name}: {e}")
 
     return inactive
+
+def get_inactive_sessions():
+    # Return the inactive sessions
+    inactive_sessions = get_inactive_sessions_internal()
+    sessions = {}
+    for (device_id, session_name), session in inactive_sessions.items():
+        key = json.dumps([device_id, session_name])
+        sessions[key] = session
+    return sessions
 
 # This function returns the available memory percentage
 def get_available_memory_percentage():
@@ -363,7 +389,7 @@ def cleanup_inactive_sessions():
 
         # Remove inactive sessions until memory is above the threshold
         inactive_sessions = sorted(
-            ((device_id, session) for device_id, session in sessions.items() if not session['is_connected']),
+            ((k, s) for k, s in sessions.items() if not s['is_connected']),
             key=lambda item: item[1].get('last_ping', 0)
         )
 
@@ -377,8 +403,9 @@ def cleanup_inactive_sessions():
                 break
 
 # This function saves the session to disk
-def save_session_to_disk(device_id, session):
-    file_path = os.path.join(INACTIVE_SESSIONS_DIR, f"{device_id}.json")
+def save_session_to_disk(device_id, session_name, session):
+    filename = f"{device_id}_{session_name}.json"
+    file_path = os.path.join(INACTIVE_SESSIONS_DIR, filename)
     try:
         with open(file_path, 'w') as f:
             json.dump(session, f, default=str)
@@ -387,14 +414,14 @@ def save_session_to_disk(device_id, session):
         app.logger.error(f"Error saving session to disk: {e}")
 
 # This function loads the session from disk
-def load_session_from_disk(device_id):
-    file_path = os.path.join(INACTIVE_SESSIONS_DIR, f"{device_id}.json")
+def load_session_from_disk(device_id, session_name):
+    filename = f"{device_id}_{session_name}.json"
+    file_path = os.path.join(INACTIVE_SESSIONS_DIR, filename)
     if os.path.exists(file_path):
         try:
             with open(file_path, 'r') as f:
-                session = json.load(f)
+                return json.load(f)
             app.logger.info(f"Loaded session from disk: {file_path}")
-            return session
         except Exception as e:
             app.logger.error(f"Error loading session from disk: {e}")
     return None

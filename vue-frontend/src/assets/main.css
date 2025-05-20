@@ -111,6 +111,19 @@ h1 {
   transition: opacity 0.3s ease-in-out;
 }
 
+.view-detail-list {
+  color: #ff00ff;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  font-weight: bold;
+  font-size: 1.25em;
+}
+
+.session-link:hover .view-detail-list {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
 .session-link {
   display: flex;
   text-decoration: none;
@@ -365,6 +378,24 @@ a:hover {
 }
 
 .delete-button:hover {
+  background: linear-gradient(225deg, transparent 15px, #ff00ff 15px);
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.delete-button-list {
+  background: linear-gradient(225deg, transparent 15px, red 15px);
+  width: 150px;
+  height: 50px;
+  font-size: 1em;
+  color: white;
+  font-weight: bold;
+  border: none;
+  transition: color 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+
+.delete-button-list:hover {
   background: linear-gradient(225deg, transparent 15px, #ff00ff 15px);
   transition: color 0.3s ease-in-out;
   transition: background 0.3s ease-in-out;
