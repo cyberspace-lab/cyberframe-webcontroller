@@ -5,3 +5,5 @@ inactive_sessions/
 *.log
 .DS_Store
 .env
+
+.playwright-mcp/
