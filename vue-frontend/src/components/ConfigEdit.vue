@@ -1,15 +1,30 @@
 <template>
   <div>
-    <div class="banner">
-      <h1>Configuration File Editing</h1>
-      <button class="banner-button" @click="goToActiveSessions">VIEW ACTIVE SESSIONS</button>
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Administration</span>
+        <h1>Configuration</h1>
+      </div>
     </div>
-    <div>
-      <textarea class="config-textarea" v-model="configContent" rows="20"></textarea>
-      <div class="config-buttons">
-        <button class="config-button" @click="saveConfig">SAVE</button>
-        <button class="config-button" @click="loadConfig">LOAD</button>
-        <input class="config-password" placeholder="Enter password" type="password" v-model="password" />
+
+    <div class="config-layout">
+      <textarea
+        class="config-textarea"
+        v-model="configContent"
+        spellcheck="false"
+        placeholder="Load the configuration to begin editing, or paste JSON here…"
+      ></textarea>
+
+      <div class="config-bar">
+        <button class="btn cyan" @click="loadConfig">Load</button>
+        <button class="btn violet" @click="saveConfig">Save</button>
+        <input
+          class="field"
+          placeholder="Password"
+          type="password"
+          v-model="password"
+        />
+        <span class="config-hint">Validated as JSON before saving</span>
       </div>
     </div>
   </div>

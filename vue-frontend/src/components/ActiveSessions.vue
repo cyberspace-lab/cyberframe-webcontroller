@@ -1,81 +1,86 @@
 <template>
   <div>
-    <div class="banner">
-      <h1>Active Sessions</h1>
-      <button class="banner-button" @click="goToInactiveSessions">VIEW INACTIVE SESSIONS</button>
-      <img 
-        src="@/assets/settings.png" 
-        alt="Settings" 
-        class="settings" 
-        @click="goToSettings"
-      />
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">Live Telemetry</span>
+        <h1>Active Sessions</h1>
+      </div>
+      <span class="count">{{ parsedSessions.length }} connected</span>
     </div>
-    <div v-if="parsedSessions.length > 0">
-      <ul class="session-list">
-        <li
-          v-for="session in parsedSessions" 
-          :key="session.deviceId + '_' + session.sessionName"
-          class="session-item"
-        >
-          <router-link :to="{ name: 'activesessiondetail', params: { deviceId: session.deviceId, sessionName: session.sessionName } }" class="session-link">
-            <div class="session-link-title">
-              <h5>{{ session.session.session_name }}</h5>
-              <small class="session-link-device">DEVICE ID: {{ session.deviceId }}</small>
-            </div>
-            <div class="session-link-time">
-              <small>Start Time: {{ new Date(session.session.start_time * 1000).toLocaleString() }}</small>
-              <small class="session-link-last-ping">Last Ping: {{ new Date(session.session.last_ping * 1000).toLocaleString() }}</small>
-            </div>
-            <p class="view-detail">VIEW DETAIL →</p>
-          </router-link>
-        </li>
-      </ul>
-    </div>
-    <div v-else>
-      <p class="no-sessions-text">NO ACTIVE SESSIONS AVAILABLE</p>
+
+    <ul v-if="parsedSessions.length > 0" class="session-list">
+      <li
+        v-for="session in parsedSessions"
+        :key="session.key"
+        class="session-row"
+        @click="openDetail(session)"
+      >
+        <div class="session-row-main">
+          <p class="session-row-name">{{ session.session.session_name }}</p>
+          <span class="session-row-device">DEVICE <b>{{ session.deviceId }}</b></span>
+        </div>
+
+        <div class="session-row-times">
+          <div>
+            <span class="session-time-label">Started </span>
+            <span class="session-time-value">{{ formatTime(session.session.start_time) }}</span>
+          </div>
+          <div>
+            <span class="session-time-label">Last ping </span>
+            <span class="session-time-value">{{ formatTime(session.session.last_ping) }}</span>
+          </div>
+        </div>
+
+        <div class="session-row-action">
+          <span class="tag live"><span class="dot"></span> Live</span>
+          <span class="session-row-chevron">View →</span>
+        </div>
+      </li>
+    </ul>
+
+    <div v-else class="empty-state">
+      <span class="glyph">⊘</span>
+      <p>No active sessions</p>
     </div>
   </div>
 </template>
-  
-<script>
-  export default {
-    name: 'activesessions',
-    data() {
-      return {
-        activeSessions: { }
-      };
-    },
-    computed: {
-      parsedSessions() {
-        return Object.entries(this.activeSessions).map(([key, session]) => {
-          let [deviceId, sessionName] = JSON.parse(key);
-          return { deviceId, sessionName, session };
-        });
-      }
-    },
-    methods: {
-      goToInactiveSessions() {
-        // Redirect to the InactiveSessions component
-        this.$router.push('/inactivesessions');
-      },
-      goToSettings() {
-        // Redirect to settings page
-        this.$router.push('/configedit');
-      },
-      handleActiveSessionsUpdate(activeSessions) {
-        // Update the activeSessions data when the 'active_sessions_update' event is received
-        this.activeSessions = activeSessions;
-      },
-    },
-    mounted() {
-      // Emit the 'get_active_sessions' event to request the active sessions data
-      this.$socket.emit('get_active_sessions');
 
-      this.$socket.on('active_sessions_update', this.handleActiveSessionsUpdate);
-    },
-    beforeUnmount() {
-      // Remove the event listener when the component is destroyed
-      this.$socket.off('active_sessions_update', this.handleActiveSessionsUpdate);
+<script>
+export default {
+  name: 'activesessions',
+  data() {
+    return {
+      activeSessions: {}
+    };
+  },
+  computed: {
+    parsedSessions() {
+      return Object.entries(this.activeSessions).map(([key, session]) => {
+        const [deviceId, sessionName] = JSON.parse(key);
+        return { key, deviceId, sessionName, session };
+      });
     }
-  };
+  },
+  methods: {
+    formatTime(epochSeconds) {
+      return new Date(epochSeconds * 1000).toLocaleString();
+    },
+    openDetail(session) {
+      this.$router.push({
+        name: 'activesessiondetail',
+        params: { deviceId: session.deviceId, sessionName: session.sessionName }
+      });
+    },
+    handleActiveSessionsUpdate(activeSessions) {
+      this.activeSessions = activeSessions;
+    }
+  },
+  mounted() {
+    this.$socket.emit('get_active_sessions');
+    this.$socket.on('active_sessions_update', this.handleActiveSessionsUpdate);
+  },
+  beforeUnmount() {
+    this.$socket.off('active_sessions_update', this.handleActiveSessionsUpdate);
+  }
+};
 </script>

@@ -2,9 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/src/assets/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcontroller</title>
+    <title>CyberspaceLab · Webcontroller</title>
+    <script>
+      // Apply persisted theme before first paint to avoid a flash of the wrong theme.
+      (function () {
+        try {
+          var t = localStorage.getItem('csl-theme') || 'dark';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

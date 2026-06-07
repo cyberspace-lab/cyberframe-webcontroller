@@ -1,59 +1,61 @@
 <template>
-  <div class="detail-container" v-if="application">
+  <div v-if="application" class="detail-grid">
 
-    <div class="left">
-
-      <!-- Display session details if available -->
-      <div>
+    <!-- LEFT: session summary + map -->
+    <div>
+      <div class="panel">
         <template v-if="session">
-          <p class="session-name">{{ session.session_name }}</p>
-          <p class="device-id">DEVICE ID: {{ deviceId }}</p>
-          <div class="session-time-container">
-            <p class="session-time">Start Time: {{ new Date(session.start_time * 1000).toLocaleString() }}</p>
-            <p class="session-time2">Last Ping: {{ new Date(session.last_ping * 1000).toLocaleString() }}</p>
+          <div class="session-summary">
+            <p class="session-summary-name">{{ session.session_name }}</p>
+            <p class="session-summary-device">DEVICE <b>{{ deviceId }}</b></p>
+            <div class="session-summary-meta">
+              <div class="meta-cell">
+                <span class="label">Start time</span>
+                <span class="value">{{ formatTime(session.start_time) }}</span>
+              </div>
+              <div class="meta-cell">
+                <span class="label">Last ping</span>
+                <span class="value">{{ formatTime(session.last_ping) }}</span>
+              </div>
+            </div>
           </div>
-          <div class="button-container">
-            <button class="save-button" @click="saveSessionAsJson">SAVE SESSION AS JSON</button>
-            <button class="back-button" @click="goToActiveSessions">BACK TO ACTIVE SESSIONS</button>
+          <div class="detail-actions">
+            <button class="btn cyan" @click="saveSessionAsJson">Save as JSON</button>
+            <button class="btn ghost" @click="goToActiveSessions">← Back</button>
           </div>
         </template>
         <template v-else>
-          <p>Session with device {{ this.deviceId }} not connected.</p>
+          <p class="session-summary-device">Session with device {{ deviceId }} not connected.</p>
         </template>
       </div>
-      
-      <!-- Map display component -->
-      <div class="map">
+
+      <div v-if="shouldRenderLatestPositions" class="map-frame">
         <LatestPositions
-          v-if="shouldRenderLatestPositions"
           :positions="filteredPositionsByLevelID"
           :mapUrl="currentMapUrl"
-          :realWidth="realMapWidth" 
+          :realWidth="realMapWidth"
           :realHeight="realMapHeight"
-          :maxWidth="540"
-          :maxHeight="680"
+          :maxWidth="520"
+          :maxHeight="640"
           :offsetX="mapOffsetX"
           :offsetY="mapOffsetY"
           :offsetRot="mapOffsetRotation"
         />
       </div>
-
     </div>
 
-    <div class="right">
-
-      <!-- Control Panel section -->
-      <div class="control-panel">
-          <h1 class="container-title">{{ application.name }} Control Panel</h1>
-          <div class="command-buttons-container">
-            <div class="command" v-for="(button, index) in filteredControlButtons" :key="index">
-            <template v-if="button.requiresInput">
-              <input 
-                v-model="dynamicInputs[index]" 
-                :placeholder="button.inputPlaceholder || 'ENTER VALUE'" 
-                class="command-input"
-              />
-            </template>
+    <!-- RIGHT: control panel + session data -->
+    <div class="detail-grid-right">
+      <div class="panel">
+        <h2 class="panel-title">{{ application.name }} Control Panel</h2>
+        <div class="command-grid">
+          <div class="command" v-for="(button, index) in filteredControlButtons" :key="button.title + '_' + index">
+            <input
+              v-if="button.requiresInput"
+              v-model="dynamicInputs[index]"
+              :placeholder="button.inputPlaceholder || 'Enter value'"
+              class="field"
+            />
             <button class="command-button" @click="handleButtonClick(button, dynamicInputs[index])">
               {{ button.title }}
             </button>
@@ -61,26 +63,32 @@
         </div>
       </div>
 
-      <!-- Session Data display section -->
-      <div class="session-data">
-        <h1 class="container-title">Session Data</h1>
-        <div v-for="(values, key) in filteredSessionData" :key="key" class="session-data-item">
-          <div class="key-value-header" @click="toggleShowAllValues(key)">
-            <h3 class="key-value-header-name">{{ key }}: </h3>
-            <span class="key-value-header-value">{{ values[0] }}</span>
-          </div>
-          <div v-if="showAllValuesToggle[key]" class="values-container">
-            <div v-for="(value, index) in values.slice(1)" :key="index" class="value-item">{{ value }}</div>
+      <div class="panel">
+        <h2 class="panel-title">Session Data</h2>
+        <div class="session-data-list">
+          <div v-for="(values, key) in filteredSessionData" :key="key" class="session-data-item">
+            <div class="kv-header" @click="toggleShowAllValues(key)">
+              <span class="kv-key">{{ key }}</span>
+              <span class="kv-value">{{ values[0] }}</span>
+              <span class="kv-caret" :class="{ open: showAllValuesToggle[key] }">▶</span>
+            </div>
+            <div v-if="showAllValuesToggle[key]" class="kv-history">
+              <div
+                v-for="(value, index) in values.slice(1)"
+                :key="key + '_' + index"
+                class="kv-history-item"
+              >{{ value }}</div>
+            </div>
           </div>
         </div>
       </div>
-
     </div>
 
   </div>
 
-  <div v-else>
-    <p class="no-sessions-text">No application selected or application not found.</p>
+  <div v-else class="empty-state">
+    <span class="glyph">⊘</span>
+    <p>No application selected or application not found</p>
   </div>
 </template>
   
@@ -228,6 +236,10 @@
       }
     },
     methods: {
+      formatTime(epochSeconds) {
+        return new Date(epochSeconds * 1000).toLocaleString();
+      },
+
       goToActiveSessions() {
         // Navigate back to the active sessions page
        this.$router.push('/activesessions');

@@ -1,0 +1,296 @@
+/* ============================================================
+   CyberspaceLab Design System — Tokens
+   Synthwave / cyberpunk academic
+   ============================================================
+   Brand colors are drawn from the live site's tailwind config:
+     primary   #0070f3  (electric blue)
+     secondary #ff0080  (hot magenta)
+   They've been extended with neon cyan, neon violet, and a deep
+   midnight-violet surface palette to round out a synthwave system
+   that still reads as serious academic work.
+   ------------------------------------------------------------ */
+
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Audiowide&display=swap");
+
+:root {
+  /* ---------- CORE BRAND ---------- */
+  --csl-blue:        #0070f3;   /* primary, from tailwind */
+  --csl-magenta:     #ff0080;   /* secondary, from tailwind */
+  --csl-cyan:        #00f0ff;   /* neon accent (from tron_prague trails) */
+  --csl-violet:      #b300ff;   /* neon accent (from neon_prague signs) */
+  --csl-amber:       #ffb347;   /* warm window-glow accent (from tron_prague) */
+  --csl-hot-pink:    #ff3da6;   /* lighter magenta (from logo gradient) */
+
+  /* ---------- SURFACES (dark-first) ---------- */
+  --csl-void:        #05010f;   /* deepest background, near-black violet */
+  --csl-midnight:    #0a0420;   /* default page bg */
+  --csl-deep:        #14082e;   /* card / panel background */
+  --csl-panel:       #1c0d3f;   /* raised panel */
+  --csl-line:        #2a1659;   /* hairline / divider */
+  --csl-line-strong: #4221a3;   /* stronger divider, focusable */
+
+  /* ---------- FOREGROUND ---------- */
+  --csl-fg-1:        #f5f1ff;   /* primary text on dark */
+  --csl-fg-2:        #c9bfe8;   /* secondary text */
+  --csl-fg-3:        #8b81b3;   /* tertiary / muted */
+  --csl-fg-4:        #5b537d;   /* disabled */
+
+  /* ---------- LIGHT MODE PAIRS (academic-friendly) ---------- */
+  --csl-paper:       #fbfaff;   /* lightest bg — near-white with violet tint */
+  --csl-paper-2:     #f0ecff;   /* light secondary surface */
+  --csl-paper-3:     #e4dcff;   /* light tertiary surface */
+  --csl-ink-1:       #0a0420;   /* primary text on light */
+  --csl-ink-2:       #2a1659;   /* secondary text on light */
+  --csl-ink-3:       #5b4a9c;   /* muted text on light */
+  --csl-ink-4:       #9489c4;   /* disabled on light */
+  --csl-rule:        #d8cdf5;   /* hairline on light */
+  --csl-rule-strong: #b8a7e8;   /* stronger divider on light */
+
+  /* ---------- SEMANTIC ---------- */
+  --csl-success:     #00ffa3;   /* matrix green */
+  --csl-warn:        #ffd23f;   /* amber */
+  --csl-danger:      #ff3860;   /* hot red */
+  --csl-info:        var(--csl-cyan);
+
+  /* ---------- GRADIENTS (signature) ---------- */
+  --csl-grad-signature: linear-gradient(90deg, var(--csl-cyan) 0%, var(--csl-blue) 35%, var(--csl-violet) 65%, var(--csl-magenta) 100%);
+  --csl-grad-sunset:    linear-gradient(180deg, #ffb347 0%, #ff3da6 50%, #b300ff 100%);
+  --csl-grad-tron:      linear-gradient(180deg, #003a52 0%, #00f0ff 60%, #b6fbff 100%);
+  --csl-grad-vapor:     linear-gradient(135deg, #ff0080 0%, #b300ff 50%, #0070f3 100%);
+  --csl-grad-floor:     linear-gradient(180deg, transparent 0%, rgba(0,240,255,0.05) 50%, rgba(255,0,128,0.15) 100%);
+
+  /* ---------- GLOWS / SHADOWS ---------- */
+  --csl-glow-cyan:    0 0 12px rgba(0,240,255,0.55), 0 0 32px rgba(0,240,255,0.25);
+  --csl-glow-magenta: 0 0 12px rgba(255,0,128,0.55), 0 0 32px rgba(255,0,128,0.25);
+  --csl-glow-violet:  0 0 12px rgba(179,0,255,0.55), 0 0 32px rgba(179,0,255,0.25);
+  --csl-glow-soft:    0 0 24px rgba(179,0,255,0.18);
+  --csl-shadow-card:  0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,0,128,0.15) inset;
+  --csl-shadow-pop:   0 18px 48px rgba(0,0,0,0.7), 0 0 0 1px var(--csl-magenta) inset;
+  --csl-inset-line:   0 0 0 1px var(--csl-line) inset;
+
+  /* ---------- RADII (intentionally tight — clipped/skewed feels more game UI) ---------- */
+  --csl-r-0: 0px;
+  --csl-r-1: 2px;
+  --csl-r-2: 4px;
+  --csl-r-3: 8px;
+  --csl-r-pill: 999px;
+
+  /* ---------- SPACING ---------- */
+  --csl-s-1:  4px;
+  --csl-s-2:  8px;
+  --csl-s-3:  12px;
+  --csl-s-4:  16px;
+  --csl-s-5:  24px;
+  --csl-s-6:  32px;
+  --csl-s-7:  48px;
+  --csl-s-8:  64px;
+  --csl-s-9:  96px;
+
+  /* ---------- SKEW (signature angled buttons / cards) ---------- */
+  --csl-skew:   -12deg;
+  --csl-skew-s: -6deg;
+
+  /* ---------- TYPOGRAPHY ---------- */
+  --csl-font-display: "Audiowide", "Chakra Petch", system-ui, sans-serif; /* hero / wordmark */
+  --csl-font-heading: "Chakra Petch", system-ui, sans-serif;              /* H1–H4, buttons */
+  --csl-font-body:    "Rajdhani", system-ui, sans-serif;                  /* body */
+  --csl-font-mono:    "JetBrains Mono", ui-monospace, monospace;          /* code, captions, labels */
+
+  /* type scale */
+  --csl-fs-display: clamp(48px, 8vw, 96px);
+  --csl-fs-h1:      clamp(36px, 5vw, 64px);
+  --csl-fs-h2:      clamp(28px, 3.5vw, 44px);
+  --csl-fs-h3:      24px;
+  --csl-fs-h4:      20px;
+  --csl-fs-body:    18px;
+  --csl-fs-small:   15px;
+  --csl-fs-eyebrow: 13px;
+
+  /* ---------- MOTION ---------- */
+  --csl-ease:       cubic-bezier(.2,.7,.2,1);
+  --csl-ease-out:   cubic-bezier(0,.5,.25,1);
+  --csl-dur-1: 120ms;
+  --csl-dur-2: 220ms;
+  --csl-dur-3: 380ms;
+}
+
+/* ============================================================
+   SEMANTIC RESET — drop these on a root element for quick base
+   ============================================================ */
+
+.csl-base {
+  background: var(--csl-midnight);
+  color: var(--csl-fg-1);
+  font-family: var(--csl-font-body);
+  font-size: var(--csl-fs-body);
+  line-height: 1.5;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+
+.csl-base h1, .csl-h1 {
+  font-family: var(--csl-font-heading);
+  font-size: var(--csl-fs-h1);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--csl-fg-1);
+  text-wrap: balance;
+}
+.csl-base h2, .csl-h2 {
+  font-family: var(--csl-font-heading);
+  font-size: var(--csl-fs-h2);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.005em;
+  color: var(--csl-fg-1);
+}
+.csl-base h3, .csl-h3 {
+  font-family: var(--csl-font-heading);
+  font-size: var(--csl-fs-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--csl-fg-1);
+}
+.csl-base h4, .csl-h4 {
+  font-family: var(--csl-font-heading);
+  font-size: var(--csl-fs-h4);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--csl-fg-1);
+}
+
+.csl-display {
+  font-family: var(--csl-font-display);
+  font-size: var(--csl-fs-display);
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+  background: var(--csl-grad-signature);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 32px rgba(255, 0, 128, 0.25);
+}
+
+.csl-eyebrow {
+  font-family: var(--csl-font-mono);
+  font-size: var(--csl-fs-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--csl-cyan);
+}
+
+.csl-base p, .csl-p {
+  font-family: var(--csl-font-body);
+  font-size: var(--csl-fs-body);
+  line-height: 1.55;
+  color: var(--csl-fg-2);
+  text-wrap: pretty;
+  max-width: 65ch;
+}
+
+.csl-base small, .csl-small {
+  font-size: var(--csl-fs-small);
+  color: var(--csl-fg-3);
+}
+
+.csl-base code, .csl-code {
+  font-family: var(--csl-font-mono);
+  font-size: 0.92em;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: var(--csl-r-1);
+  color: var(--csl-cyan);
+}
+
+.csl-base a, .csl-a {
+  color: var(--csl-cyan);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.4);
+  transition: border-color var(--csl-dur-2) var(--csl-ease);
+}
+.csl-base a:hover, .csl-a:hover {
+  color: var(--csl-magenta);
+  border-bottom-color: var(--csl-magenta);
+  text-shadow: 0 0 8px rgba(255, 0, 128, 0.6);
+}
+
+/* ============================================================
+   LIGHT THEME — re-map the surface + fg tokens. Components keep
+   using the same variable names, no markup changes needed.
+   ------------------------------------------------------------
+   Aesthetic: "neon signs glowing on white paper". Accents stay
+   vivid; glows soften; backgrounds become warm-cool off-whites
+   with subtle violet tints; text becomes deep violet-ink.
+   ============================================================ */
+
+[data-theme="light"] {
+  /* surfaces flip dark→light */
+  --csl-void:        #ffffff;
+  --csl-midnight:    #fbfaff;
+  --csl-deep:        #ffffff;     /* card background */
+  --csl-panel:       #f0ecff;     /* raised panel */
+  --csl-line:        #d8cdf5;     /* hairline */
+  --csl-line-strong: #b8a7e8;     /* stronger divider */
+
+  /* foreground flips light→dark-ink */
+  --csl-fg-1:        #0a0420;
+  --csl-fg-2:        #2a1659;
+  --csl-fg-3:        #5b4a9c;
+  --csl-fg-4:        #9489c4;
+
+  /* accents stay punchy but slightly darker so they POP on white */
+  --csl-blue:        #0058c4;
+  --csl-magenta:     #d10068;
+  --csl-cyan:        #0098a8;     /* darker teal — pure cyan vibrates on white */
+  --csl-violet:      #8c00d4;
+  --csl-amber:       #c47800;
+  --csl-hot-pink:    #d6307e;
+
+  /* glows: dial down opacity so they read as paper, not screen */
+  --csl-glow-cyan:    0 0 8px rgba(0,152,168,0.22), 0 0 18px rgba(0,152,168,0.08);
+  --csl-glow-magenta: 0 0 8px rgba(209,0,104,0.25), 0 0 18px rgba(209,0,104,0.1);
+  --csl-glow-violet:  0 0 8px rgba(140,0,212,0.25), 0 0 18px rgba(140,0,212,0.1);
+  --csl-glow-soft:    0 0 18px rgba(140,0,212,0.08);
+  --csl-shadow-card:  0 6px 24px rgba(20,8,46,0.08), 0 0 0 1px rgba(140,0,212,0.12) inset;
+  --csl-shadow-pop:   0 16px 40px rgba(20,8,46,0.16), 0 0 0 1.5px var(--csl-violet) inset;
+  --csl-inset-line:   0 0 0 1px var(--csl-line) inset;
+
+  /* re-do gradients with darker accents so they print well */
+  --csl-grad-signature: linear-gradient(90deg, #0098a8 0%, #0058c4 35%, #8c00d4 65%, #d10068 100%);
+  --csl-grad-vapor:     linear-gradient(135deg, #d10068 0%, #8c00d4 50%, #0058c4 100%);
+  --csl-grad-sunset:    linear-gradient(180deg, #c47800 0%, #d6307e 50%, #8c00d4 100%);
+  --csl-grad-tron:      linear-gradient(180deg, #003a52 0%, #0098a8 60%, #6dd5db 100%);
+
+  /* semantic darkens slightly */
+  --csl-success:     #00a86b;
+  --csl-warn:        #d49500;
+  --csl-danger:      #d12350;
+  --csl-info:        var(--csl-cyan);
+}
+
+/* code/link tweaks for light mode */
+[data-theme="light"] .csl-base code,
+[data-theme="light"] .csl-code {
+  background: rgba(0,152,168,0.08);
+  border-color: rgba(0,152,168,0.25);
+  color: #006d78;
+}
+[data-theme="light"] .csl-base a,
+[data-theme="light"] .csl-a {
+  color: var(--csl-violet);
+  border-bottom-color: rgba(140,0,212,0.4);
+}
+[data-theme="light"] .csl-base a:hover,
+[data-theme="light"] .csl-a:hover {
+  color: var(--csl-magenta);
+  border-bottom-color: var(--csl-magenta);
+  text-shadow: 0 0 6px rgba(209,0,104,0.3);
+}
+
+/* display gradient text shadow is too heavy on light — soften it */
+[data-theme="light"] .csl-display {
+  text-shadow: 0 0 24px rgba(140,0,212,0.15);
+}

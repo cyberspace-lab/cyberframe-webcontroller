@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 import { createSocket } from './socket';
 
+import './assets/tokens.css';
 import './assets/main.css';
 
 const socket = createSocket();
