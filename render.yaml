@@ -1,0 +1,14 @@
+# One-click deploy to Render (https://render.com). Push this repo, point Render
+# at it, and it builds the Vue dashboard + runs the Node server in one service.
+# Works the same on Railway/Fly with the equivalent build/start commands.
+services:
+  - type: web
+    name: cyberframe-webcontroller
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PASSWORD
+        sync: false
+      # Render sets PORT automatically; the server reads process.env.PORT.

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(git rm *)",
+      "Bash(npm install *)",
+      "Bash(PASSWORD=test123 npm start)",
+      "Read(//tmp/**)",
+      "Bash(curl -s http://localhost:4000/health)",
+      "Bash(curl -s http://localhost:4000/)",
+      "Bash(node /tmp/wc_e2e.mjs)",
+      "Bash(node /Users/lukashejtmanek/Documents/Projects/CyberspaceLab/Utilities/cyberframe-webcontroller/wc_e2e.mjs)",
+      "Bash(pkill -f \"node server/index.js\")"
+    ],
+    "additionalDirectories": [
+      "/tmp",
+      "/private/tmp"
+    ]
+  }
+}

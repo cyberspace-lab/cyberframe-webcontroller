@@ -7,8 +7,9 @@ export default defineConfig({
   server: {
     host: true,
     proxy: {
-      '/socket.io': {
-        target: 'http://flask_app:4000',
+      // Proxy the native WebSocket endpoint to the Node server during dev.
+      '/ws': {
+        target: 'http://localhost:4000',
         ws: true,
         changeOrigin: true
       }

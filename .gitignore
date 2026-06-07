@@ -1,0 +1,7 @@
+node_modules/
+vue-frontend/node_modules/
+vue-frontend/dist/
+inactive_sessions/
+*.log
+.DS_Store
+.env

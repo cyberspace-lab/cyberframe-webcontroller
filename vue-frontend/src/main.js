@@ -1,11 +1,11 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import { io } from 'socket.io-client';
+import { createSocket } from './socket';
 
 import './assets/main.css';
 
-const socket = io();
+const socket = createSocket();
 
 socket.on('connect', () => {
     console.log('Vue connected to server');
