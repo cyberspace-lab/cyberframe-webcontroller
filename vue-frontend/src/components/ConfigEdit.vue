@@ -3,161 +3,240 @@
     <div class="page-head">
       <div>
         <span class="eyebrow">Administration</span>
-        <h1>Configuration</h1>
+        <h1>Experiments</h1>
+      </div>
+      <span class="count">{{ experiments.length }} configured</span>
+    </div>
+
+    <p class="config-note">
+      These experiments are baked into the dashboard at build time. To add or
+      change one, edit <code>vue-frontend/src/config.json</code> in the repository
+      and redeploy. A session is matched to an experiment by its
+      <b>session&nbsp;name</b>.
+    </p>
+
+    <div v-if="experiments.length" class="experiment-grid">
+      <div v-for="exp in experiments" :key="exp.name" class="panel experiment-card">
+        <h2 class="panel-title">{{ exp.name }}</h2>
+
+        <div class="exp-meta">
+          <span class="tag">{{ exp.actions.length }} actions</span>
+          <span class="tag">{{ exp.receivers.length }} receivers</span>
+          <span class="tag">{{ exp.levels.length }} levels</span>
+        </div>
+
+        <!-- Implemented actions -->
+        <section class="exp-section">
+          <h3 class="exp-section-title">Actions</h3>
+          <ul class="action-list">
+            <li v-for="(action, i) in exp.actions" :key="action.title + '_' + i" class="action-item">
+              <div class="action-head">
+                <span class="action-title">{{ action.title }}</span>
+                <code class="action-event">{{ action.eventName }}</code>
+              </div>
+              <div class="action-tags">
+                <span v-if="action.requiresInput" class="tag">input</span>
+                <span
+                  v-for="ctx in action.contexts"
+                  :key="ctx"
+                  class="tag idle"
+                ><span class="dot"></span>{{ ctx }}</span>
+                <span v-if="action.params" class="action-params">{{ action.params }}</span>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Receivers -->
+        <section v-if="exp.receivers.length" class="exp-section">
+          <h3 class="exp-section-title">Receivers</h3>
+          <div class="chip-row">
+            <span v-for="r in exp.receivers" :key="r.key" class="chip">
+              {{ r.key }}<small>×{{ r.maxHistory }}</small>
+            </span>
+          </div>
+        </section>
+
+        <!-- Levels -->
+        <section v-if="exp.levels.length" class="exp-section">
+          <h3 class="exp-section-title">Levels</h3>
+          <div class="chip-row">
+            <span v-for="lvl in exp.levels" :key="lvl" class="chip">{{ lvl }}</span>
+          </div>
+        </section>
       </div>
     </div>
 
-    <div class="config-layout">
-      <textarea
-        class="config-textarea"
-        v-model="configContent"
-        spellcheck="false"
-        placeholder="Load the configuration to begin editing, or paste JSON here…"
-      ></textarea>
-
-      <div class="config-bar">
-        <button class="btn cyan" @click="loadConfig">Load</button>
-        <button class="btn violet" @click="saveConfig">Save</button>
-        <input
-          class="field"
-          placeholder="Password"
-          type="password"
-          v-model="password"
-        />
-        <span class="config-hint">Validated as JSON before saving</span>
-      </div>
+    <div v-else class="empty-state">
+      <span class="glyph">⊘</span>
+      <p>No experiments configured</p>
     </div>
   </div>
 </template>
 
 <script>
+  import config from '@/config.json';
+
   export default {
     name: 'configedit',
-    data() {
-      return {
-        password: '',
-        configContent: ''
-      };
+    computed: {
+      experiments() {
+        const apps = config.applications || {};
+        return Object.entries(apps).map(([name, app]) => ({
+          name,
+          actions: (app.controlButtons || []).map((button) => {
+            const params = button.payload?.parameters || {};
+            const hasParams = Object.keys(params).length > 0;
+            return {
+              title: button.title,
+              eventName: button.payload?.eventName || '—',
+              requiresInput: !!button.requiresInput,
+              contexts: Array.isArray(button.context) ? button.context : [],
+              params: hasParams ? JSON.stringify(params) : null,
+            };
+          }),
+          receivers: this.flattenReceivers(app.receivers),
+          levels: this.flattenLevels(app.levels),
+        }));
+      },
     },
     methods: {
-      goToActiveSessions() {
-        // Redirect to active sessions page
-        this.$router.push('/activesessions');
-      },
-      saveConfig() {
-        // Validate configuration before saving
-        if (!this.validateConfig()) return;
-
-        // Send password and config content to backend
-        const data = {
-          password: this.password,
-          config_content: this.configContent
-        };
-
-        this.$socket.emit('save_config', data);
-      },
-      loadConfig() {
-        // Send password to backend to load the config
-        const data = {
-          password: this.password
-        };
-
-        this.$socket.emit('load_config', data);
-      },
-      handleError(data) {
-        alert(data.message);
-      },
-      handleSaved() {
-        alert('Configuration saved successfully!');
-      },
-      handleLoaded(data) {
-        this.configContent = data.config_content;
-        alert('Configuration loaded successfully!');
-      },
-      validateConfig() {
-        try {
-          // Parse JSON
-          const config = JSON.parse(this.configContent);
-
-          // Ensure required fields exist
-          if (!config.applications || typeof config.applications !== "object") {
-            alert("Invalid configuration: 'applications' field is missing or incorrect.");
-            return false;
+      flattenReceivers(receivers) {
+        const out = [];
+        for (const group of receivers || []) {
+          for (const [key, meta] of Object.entries(group || {})) {
+            out.push({ key, maxHistory: meta?.maxHistory ?? 10 });
           }
-
-          // Validate each application
-          for (const appKey in config.applications) {
-            const app = config.applications[appKey];
-
-            if (!Array.isArray(app.controlButtons)) {
-              alert(`Invalid configuration: 'controlButtons' should be an array in '${appKey}'.`);
-              return false;
-            }
-
-            if (!Array.isArray(app.receivers)) {
-              alert(`Invalid configuration: 'receivers' should be an array in '${appKey}'.`);
-              return false;
-            }
-
-            if (!Array.isArray(app.levels)) {
-              alert(`Invalid configuration: 'levels' should be an array in '${appKey}'.`);
-              return false;
-            }
-
-            // Validate controlButtons
-            for (const button of app.controlButtons) {
-              if (!button.title || typeof button.title !== "string") {
-                alert(`Invalid control button title in '${appKey}'.`);
-                return false;
-              }
-              if (!button.payload || !button.payload.eventName) {
-                alert(`Invalid payload in control button '${button.title}' in '${appKey}'.`);
-                return false;
-              }
-            }
-
-            // Validate levels
-            for (const level of app.levels) {
-              for (const levelKey in level) {
-                const levelData = level[levelKey];
-                if (!levelData.url || typeof levelData.url !== "string") {
-                  alert(`Invalid URL for level '${levelKey}' in '${appKey}'.`);
-                  return false;
-                }
-                if (typeof levelData.realWidth !== "number" || levelData.realWidth <= 0) {
-                  alert(`Invalid 'realWidth' for level '${levelKey}' in '${appKey}'.`);
-                  return false;
-                }
-                if (typeof levelData.realHeight !== "number" || levelData.realHeight <= 0) {
-                  alert(`Invalid 'realHeight' for level '${levelKey}' in '${appKey}'.`);
-                  return false;
-                }
-              }
-            }
-          }
-
-          // Check memory percentage limit
-          if (typeof config.min_free_memory_percentage !== "number" || config.min_free_memory_percentage < 0 || config.min_free_memory_percentage > 100) {
-            alert("Invalid 'min_free_memory_percentage'. It must be a number between 0 and 100.");
-            return false;
-          }
-
-          return true;
-        } catch (error) {
-          alert("Invalid JSON format! Please check your configuration.");
-          return false;
         }
-      }
+        return out;
+      },
+      flattenLevels(levels) {
+        const out = [];
+        for (const group of levels || []) {
+          for (const id of Object.keys(group || {})) out.push(id);
+        }
+        return out;
+      },
     },
-    mounted() {
-      this.$socket.on('error', this.handleError);
-      this.$socket.on('config_saved', this.handleSaved);
-      this.$socket.on('config_loaded', this.handleLoaded);
-    },
-    beforeUnmount() {
-      this.$socket.off('error', this.handleError);
-      this.$socket.off('config_saved', this.handleSaved);
-      this.$socket.off('config_loaded', this.handleLoaded);
-    }
   };
 </script>
+
+<style scoped>
+.config-note {
+  max-width: 1000px;
+  margin: 0 0 var(--csl-s-6);
+  font-family: var(--csl-font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--csl-fg-3);
+}
+
+.config-note code {
+  color: var(--csl-cyan);
+}
+
+.config-note b {
+  color: var(--csl-magenta);
+}
+
+.experiment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: var(--csl-s-6);
+  align-items: start;
+}
+
+.exp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--csl-s-2);
+  margin-bottom: var(--csl-s-5);
+}
+
+.exp-section {
+  margin-top: var(--csl-s-5);
+}
+
+.exp-section-title {
+  margin: 0 0 var(--csl-s-3);
+  font-family: var(--csl-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--csl-fg-3);
+}
+
+.action-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--csl-s-2);
+}
+
+.action-item {
+  border: 1px solid var(--csl-line);
+  border-radius: var(--csl-r-2);
+  background: color-mix(in srgb, var(--csl-panel) 45%, transparent);
+  padding: 10px 13px;
+}
+
+.action-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--csl-s-3);
+}
+
+.action-title {
+  font-family: var(--csl-font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--csl-fg-1);
+}
+
+.action-event {
+  font-family: var(--csl-font-mono);
+  font-size: 12px;
+  color: var(--csl-cyan);
+  white-space: nowrap;
+}
+
+.action-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.action-params {
+  font-family: var(--csl-font-mono);
+  font-size: 11px;
+  color: var(--csl-fg-3);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--csl-font-mono);
+  font-size: 12px;
+  color: var(--csl-fg-2);
+  border: 1px solid var(--csl-line-strong);
+  border-radius: var(--csl-r-1);
+  padding: 4px 9px;
+  background: color-mix(in srgb, var(--csl-panel) 45%, transparent);
+}
+
+.chip small {
+  color: var(--csl-fg-4);
+  font-size: 10px;
+}
+</style>

@@ -9,7 +9,7 @@
       <nav class="app-nav">
         <router-link to="/activesessions" class="nav-link">Active</router-link>
         <router-link to="/inactivesessions" class="nav-link">Inactive</router-link>
-        <router-link to="/configedit" class="nav-link">Config</router-link>
+        <router-link to="/configedit" class="nav-link">Experiments</router-link>
 
         <div class="theme-toggle" role="group" aria-label="Theme">
           <button

@@ -27,7 +27,6 @@ import {
   getInactiveSessions,
   getMaxHistory,
   getSession,
-  hasActiveSessions,
   loadSessionFromDisk,
   saveSessionToDisk,
   setSession,
@@ -37,7 +36,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
 const PORT = process.env.PORT || 4000;
-const PASSWORD = process.env.PASSWORD || '0000';
 const CONFIG_PATH = path.join(ROOT, 'vue-frontend', 'src', 'config.json');
 const DIST_DIR = path.join(ROOT, 'vue-frontend', 'dist');
 
@@ -270,39 +268,6 @@ const handlers = {
     if (session) {
       console.log(`Deleted session for device ID: ${deviceId}`);
       emitSessionsUpdate();
-    }
-  },
-
-  load_config(ws, data) {
-    if (data?.password !== PASSWORD) {
-      send(ws, 'error', { message: 'Incorrect password' });
-      return;
-    }
-    try {
-      const content = fs.readFileSync(CONFIG_PATH, 'utf8');
-      send(ws, 'config_loaded', { config_content: content });
-    } catch (err) {
-      console.error(`Error loading config: ${err}`);
-      send(ws, 'error', { message: 'Error loading config' });
-    }
-  },
-
-  save_config(ws, data) {
-    if (hasActiveSessions()) {
-      send(ws, 'error', { message: 'Cannot save config due to active sessions.' });
-      return;
-    }
-    if (data?.password !== PASSWORD) {
-      send(ws, 'error', { message: 'Incorrect password' });
-      return;
-    }
-    try {
-      fs.writeFileSync(CONFIG_PATH, data.config_content);
-      config = JSON.parse(data.config_content);
-      send(ws, 'config_saved');
-    } catch (err) {
-      console.error(`Error saving config: ${err}`);
-      send(ws, 'error', { message: 'Error saving config' });
     }
   },
 };

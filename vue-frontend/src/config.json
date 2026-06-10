@@ -332,6 +332,77 @@
             }
           }
         ]
+      },
+      "TeleportationArc": {
+        "controlButtons": [
+          {
+            "title": "Use settings A",
+            "payload": {
+              "eventName": "selectSettings",
+              "parameters": {
+                "settingsIndex": 0
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Use settings B",
+            "payload": {
+              "eventName": "selectSettings",
+              "parameters": {
+                "settingsIndex": 1
+              }
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Start experiment",
+            "payload": {
+              "eventName": "startExperiment",
+              "parameters": {}
+            },
+            "context": ["menu"]
+          },
+          {
+            "title": "Stop experiment",
+            "payload": {
+              "eventName": "stopExperiment",
+              "parameters": {}
+            },
+            "context": ["experiment"]
+          }
+        ],
+        "receivers": [
+          {
+            "experimentState": {
+              "maxHistory": 10
+            },
+            "trialState": {
+              "maxHistory": 10
+            },
+            "trial": {
+              "maxHistory": 10
+            },
+            "activeSettings": {
+              "maxHistory": 5
+            },
+            "position": {
+              "maxHistory": 15
+            }
+          }
+        ],
+        "levels": [
+          {
+            "1": {
+              "url": "https://placehold.co/600x600.png",
+              "realWidth": 30,
+              "realHeight": 30,
+              "mapOffsetX": 0,
+              "mapOffsetY": 0,
+              "mapOffsetRotation": 0
+            }
+          }
+        ]
       }
     },
     "min_free_memory_percentage": 20
