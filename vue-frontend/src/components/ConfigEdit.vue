@@ -141,9 +141,22 @@
 
 .experiment-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr));
   gap: var(--csl-s-6);
   align-items: start;
+}
+
+/* On phones, let the action title + event name stack instead of overflowing */
+@media (max-width: 560px) {
+  .action-head {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .action-event {
+    white-space: normal;
+    word-break: break-word;
+  }
 }
 
 .exp-meta {

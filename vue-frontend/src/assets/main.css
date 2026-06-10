@@ -655,7 +655,7 @@ a {
 /* control panel */
 .command-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
   gap: var(--csl-s-4);
 }
 
@@ -815,4 +815,117 @@ a {
 .kv-history::-webkit-scrollbar-thumb {
   background: var(--csl-line-strong);
   border-radius: var(--csl-r-pill);
+}
+
+/* ============================================================
+   RESPONSIVE — tablet + phone
+   The desktop layout is the base; these queries progressively
+   reflow it down to a comfortable single-column mobile view.
+   ============================================================ */
+
+/* Tablet / small laptop */
+@media (max-width: 768px) {
+  .app-main {
+    padding: var(--csl-s-6) var(--csl-s-5) var(--csl-s-8);
+  }
+
+  .app-header-inner {
+    padding: 12px var(--csl-s-5);
+    gap: var(--csl-s-4);
+  }
+
+  .app-nav {
+    gap: var(--csl-s-4);
+  }
+}
+
+/* Phone */
+@media (max-width: 560px) {
+  body {
+    font-size: var(--csl-fs-small);
+  }
+
+  .app-main {
+    padding: var(--csl-s-5) var(--csl-s-4) var(--csl-s-7);
+  }
+
+  /* Header wraps: brand on the first row, nav on its own full-width row */
+  .app-header-inner {
+    flex-wrap: wrap;
+    padding: 10px var(--csl-s-4);
+    gap: var(--csl-s-3);
+  }
+
+  .app-nav {
+    width: 100%;
+    margin-left: 0;
+    gap: var(--csl-s-4);
+  }
+
+  .theme-toggle {
+    margin-left: auto;
+  }
+
+  .nav-link {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+
+  /* Page head stacks; the count drops below the title */
+  .page-head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--csl-s-2);
+  }
+
+  .page-head .count {
+    margin-left: 0;
+    width: 100%;
+    padding-bottom: 0;
+  }
+
+  /* Session rows reflow into a single stacked column */
+  .session-row {
+    grid-template-columns: 1fr;
+    gap: var(--csl-s-3);
+    padding: var(--csl-s-4) var(--csl-s-5);
+  }
+
+  .session-row-name {
+    font-size: 18px;
+  }
+
+  .session-row-times {
+    grid-template-columns: 1fr 1fr;
+    text-align: left;
+    gap: var(--csl-s-3);
+  }
+
+  .session-row-action {
+    justify-content: space-between;
+  }
+
+  /* Detail view: full-width action buttons, two-up meta cells stay readable */
+  .detail-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  .session-summary-name {
+    font-size: 22px;
+  }
+
+  /* Maps and long data values must never force horizontal scroll */
+  .map-frame {
+    min-height: 200px;
+  }
+
+  .session-data-list {
+    max-height: none;
+  }
+
+  /* Expanded history values can be long — wrap them instead of scrolling sideways */
+  .kv-history-item {
+    white-space: normal;
+    word-break: break-word;
+  }
 }
